@@ -1,17 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Heart, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ritualLogo from "@/assets/ritual-logo.png";
 import { CreateCoupleDialog } from "@/components/CreateCoupleDialog";
 import { JoinCoupleDialog } from "@/components/JoinCoupleDialog";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [couple, setCouple] = useState<any>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      const fetchCouple = async () => {
+        const { data } = await supabase
+          .from('couples')
+          .select('*')
+          .or(`partner_one.eq.${user.id},partner_two.eq.${user.id}`)
+          .maybeSingle();
+        
+        setCouple(data);
+      };
+      fetchCouple();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('couples-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'couples',
+          },
+          () => {
+            fetchCouple();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setCouple(null);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-warm flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-warm flex flex-col items-center justify-center p-6 relative">
+      {user && (
+        <Button
+          onClick={handleSignOut}
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4"
+        >
+          <LogOut className="w-5 h-5" />
+        </Button>
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -65,29 +132,60 @@ const Index = () => {
           </div>
         </motion.div>
 
-        {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           className="space-y-3 pt-4"
         >
-          <Button
-            onClick={() => setShowCreate(true)}
-            size="lg"
-            className="w-full bg-gradient-ritual text-white hover:opacity-90 transition-opacity shadow-soft text-lg h-14 rounded-2xl"
-          >
-            Start a Ritual
-          </Button>
-          
-          <Button
-            onClick={() => setShowJoin(true)}
-            variant="outline"
-            size="lg"
-            className="w-full border-2 border-primary/30 text-foreground hover:bg-lavender-light transition-colors text-lg h-14 rounded-2xl"
-          >
-            Join Your Partner
-          </Button>
+          {!user ? (
+            <Button
+              onClick={() => navigate("/auth")}
+              size="lg"
+              className="w-full bg-gradient-ritual text-white hover:opacity-90 transition-opacity shadow-soft text-lg h-14 rounded-2xl"
+            >
+              Get Started
+            </Button>
+          ) : couple ? (
+            <>
+              <Button
+                onClick={() => navigate("/input")}
+                size="lg"
+                className="w-full bg-gradient-ritual text-white hover:opacity-90 transition-opacity shadow-soft text-lg h-14 rounded-2xl"
+              >
+                Weekly Input
+              </Button>
+              {couple.partner_two && (
+                <Button
+                  onClick={() => navigate("/rituals")}
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-2 border-primary/30 text-foreground hover:bg-lavender-light transition-colors text-lg h-14 rounded-2xl"
+                >
+                  View Rituals
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={() => setShowCreate(true)}
+                size="lg"
+                className="w-full bg-gradient-ritual text-white hover:opacity-90 transition-opacity shadow-soft text-lg h-14 rounded-2xl"
+              >
+                Start a Ritual
+              </Button>
+              
+              <Button
+                onClick={() => setShowJoin(true)}
+                variant="outline"
+                size="lg"
+                className="w-full border-2 border-primary/30 text-foreground hover:bg-lavender-light transition-colors text-lg h-14 rounded-2xl"
+              >
+                Join Your Partner
+              </Button>
+            </>
+          )}
         </motion.div>
 
         {/* Footer */}
