@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateCoupleDialogProps {
   open: boolean;
@@ -16,13 +18,42 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
   const [yourName, setYourName] = useState("");
   const [coupleCode, setCoupleCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const generateCode = () => {
-    // Generate a 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setCoupleCode(code);
-    setStep("code");
-    toast.success("Couple created! Share your code with your partner.");
+  const generateCode = async () => {
+    if (!yourName.trim()) return;
+    
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in first");
+        navigate("/auth");
+        return;
+      }
+
+      // Generate a 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Create couple in database
+      const { error } = await supabase
+        .from('couples')
+        .insert({
+          partner_one: user.id,
+          couple_code: code,
+        });
+
+      if (error) throw error;
+
+      setCoupleCode(code);
+      setStep("code");
+      toast.success("Couple created! Share your code with your partner.");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyCode = () => {
@@ -63,10 +94,10 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
               </div>
               <Button
                 onClick={generateCode}
-                disabled={!yourName.trim()}
+                disabled={!yourName.trim() || loading}
                 className="w-full bg-gradient-ritual text-white hover:opacity-90 h-12 rounded-xl text-lg"
               >
-                Create Ritual
+                {loading ? "Creating..." : "Create Ritual"}
               </Button>
             </div>
           </>

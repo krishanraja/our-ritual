@@ -1,0 +1,4 @@
+project_id = "gdojuuzlxpxftsfkmneu"
+
+[functions.synthesize-rituals]
+verify_jwt = true

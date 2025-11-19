@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface JoinCoupleDialogProps {
   open: boolean;
@@ -13,8 +15,10 @@ interface JoinCoupleDialogProps {
 export const JoinCoupleDialog = ({ open, onOpenChange }: JoinCoupleDialogProps) => {
   const [yourName, setYourName] = useState("");
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!yourName.trim() || !code.trim()) {
       toast.error("Please fill in all fields");
       return;
@@ -25,9 +29,48 @@ export const JoinCoupleDialog = ({ open, onOpenChange }: JoinCoupleDialogProps) 
       return;
     }
 
-    // TODO: Implement actual joining logic with Supabase
-    toast.success("Joined! Redirecting to your ritual space...");
-    onOpenChange(false);
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in first");
+        navigate("/auth");
+        return;
+      }
+
+      // Find couple with this code
+      const { data: couple, error: findError } = await supabase
+        .from('couples')
+        .select('*')
+        .eq('couple_code', code)
+        .maybeSingle();
+
+      if (findError) throw findError;
+      if (!couple) {
+        toast.error("Invalid couple code");
+        return;
+      }
+
+      if (couple.partner_two) {
+        toast.error("This couple is already complete");
+        return;
+      }
+
+      // Join the couple
+      const { error: updateError } = await supabase
+        .from('couples')
+        .update({ partner_two: user.id })
+        .eq('id', couple.id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Successfully joined your partner's ritual!");
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,10 +108,10 @@ export const JoinCoupleDialog = ({ open, onOpenChange }: JoinCoupleDialogProps) 
 
           <Button
             onClick={handleJoin}
-            disabled={!yourName.trim() || code.length !== 6}
+            disabled={!yourName.trim() || code.length !== 6 || loading}
             className="w-full bg-gradient-ritual text-white hover:opacity-90 h-12 rounded-xl text-lg"
           >
-            Join Ritual
+            {loading ? "Joining..." : "Join Ritual"}
           </Button>
         </div>
       </DialogContent>
