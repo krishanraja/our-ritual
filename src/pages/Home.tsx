@@ -126,7 +126,7 @@ export default function Home() {
             View Rituals
           </Button>
         ) : !userSubmitted && (
-          <Button onClick={() => navigate('/magnetic')} size="lg" className="w-full bg-gradient-ritual text-white h-14 rounded-xl">
+          <Button onClick={() => navigate('/input')} size="lg" className="w-full bg-gradient-ritual text-white h-14 rounded-xl">
             Start Weekly Input
           </Button>
         )}

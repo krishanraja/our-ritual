@@ -8,7 +8,6 @@ import { AppShell } from "@/components/AppShell";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import WeeklyInput from "./pages/WeeklyInput";
 import MagneticInput from "./pages/MagneticInput";
 import RitualCards from "./pages/RitualCards";
 import History from "./pages/History";
@@ -26,11 +25,10 @@ const App = () => (
         <CoupleProvider>
           <AppShell>
             <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/home" element={<Home />} />
+              <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/input" element={<WeeklyInput />} />
-              <Route path="/magnetic" element={<MagneticInput />} />
+              <Route path="/welcome" element={<Landing />} />
+              <Route path="/input" element={<MagneticInput />} />
               <Route path="/rituals" element={<RitualCards />} />
               <Route path="/history" element={<History />} />
               <Route path="/profile" element={<Profile />} />
