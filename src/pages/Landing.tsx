@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Heart, Calendar, Sparkles } from 'lucide-react';
-import ritualLogo from '@/assets/ritual-logo.png';
+import { RitualLogo } from '@/components/RitualLogo';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -16,11 +16,7 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <img 
-            src={ritualLogo} 
-            alt="Ritual - Create Rituals Together" 
-            className="max-w-[280px] w-full h-auto mx-auto mb-12"
-          />
+          <RitualLogo size="xl" className="max-w-[280px] mx-auto mb-12" />
         </motion.div>
         
         {/* Hero Section */}

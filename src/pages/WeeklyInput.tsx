@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCouple } from "@/contexts/CoupleContext";
 import { usePresence } from "@/hooks/usePresence";
-import ritualLogo from "@/assets/ritual-logo.png";
+import { RitualLogo } from "@/components/RitualLogo";
 
 const QUESTIONS = [
   {
