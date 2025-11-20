@@ -31,7 +31,7 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth event on /auth:", event);
       if (session) {
-        navigate("/home");
+        navigate("/");
       }
     });
 
@@ -41,7 +41,7 @@ const Auth = () => {
         console.log("Auth page session check error:", error.message);
       }
       if (session) {
-        navigate("/home");
+        navigate("/");
       }
     });
 
@@ -65,7 +65,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/home`,
+            emailRedirectTo: `${window.location.origin}/`,
             data: {
               name: name,
             },
