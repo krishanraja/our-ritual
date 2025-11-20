@@ -12,105 +12,192 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
-
-    const { partnerOneInput, partnerTwoInput, coupleId } = await req.json();
-
-    console.log('Synthesizing rituals for couple:', coupleId);
-
-    // Prepare AI prompt
-    const systemPrompt = `You are a thoughtful ritual designer for couples. Given two partners' weekly inputs, synthesize 3-5 personalized rituals that:
-- Balance both partners' energy levels and preferences
-- Respect time and budget constraints
-- Include variety (at least one micro-ritual, one novelty ritual)
-- Create intimacy and surprise
-- Feel warm and achievable
-
-Return ONLY a JSON array of rituals, no markdown, no explanation. Each ritual should have:
-{
-  "title": "Short engaging title",
-  "category": "connection|rest|fun|exploration|comfort|intimacy",
-  "description": "2-3 sentences describing the ritual",
-  "time_estimate": "15 min|30 min|1 hour|2 hours|half day",
-  "budget_band": "free|low|medium"
-}`;
-
-    const userPrompt = `Partner 1:
-Energy: ${partnerOneInput.energy}
-Time: ${partnerOneInput.time}
-Budget: ${partnerOneInput.budget}
-Craving: ${partnerOneInput.craving}
-Desire: ${partnerOneInput.desire}
-
-Partner 2:
-Energy: ${partnerTwoInput.energy}
-Time: ${partnerTwoInput.time}
-Budget: ${partnerTwoInput.budget}
-Craving: ${partnerTwoInput.craving}
-Desire: ${partnerTwoInput.desire}`;
-
-    // Call Lovable AI
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
+    
+    const { action, weeklyInputs, partnerOneInput, partnerTwoInput, coupleId } = await req.json();
+    
+    // Handle swap action - generate a single alternative ritual
+    if (action === 'swap') {
+      const { currentRitual, inputs } = weeklyInputs;
+      
+      const swapPrompt = `You are a creative ritual designer. Generate ONE surprising and delightful alternative ritual that is different from this current one:
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+Current Ritual: ${currentRitual.title}
+${currentRitual.description}
+
+User Inputs:
+- Energy: ${inputs.partner_one_input.energy} / ${inputs.partner_two_input.energy}
+- Time: ${inputs.partner_one_input.availability} / ${inputs.partner_two_input.availability}
+- Budget: ${inputs.partner_one_input.budget} / ${inputs.partner_two_input.budget}
+- Cravings: ${inputs.partner_one_input.craving} / ${inputs.partner_two_input.craving}
+- Desires: "${inputs.partner_one_input.desire}" / "${inputs.partner_two_input.desire}"
+
+Create a completely different ritual that:
+- Is unexpected and delightful, not generic
+- Matches their inputs but is more creative than the current one
+- Has personality and spark
+- Feels special, not like a typical date
+- Include sensory details and specificity
+
+Return ONLY valid JSON (no markdown, no explanation) in this exact format:
+{
+  "title": "Ritual name (creative, not generic)",
+  "category": "Connection|Rest|Fun|Exploration|Comfort|Intimacy",
+  "description": "Vivid, specific description with sensory details (2-3 sentences)",
+  "time_estimate": "30 min|1 hour|1.5 hours|2 hours|3 hours",
+  "budget_band": "Free|$|$$|$$$"
+}`;
+
+      console.log("Generating swap ritual with Lovable AI");
+      
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'user', content: swapPrompt }
+          ],
+          temperature: 1.2,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Lovable AI error:', response.status, errorText);
+        
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "AI rate limit exceeded. Please try again in a moment." }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "AI credits depleted. Please add credits to continue." }), {
+            status: 402,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
+        throw new Error(`AI request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      let ritualText = data.choices[0].message.content.trim();
+      
+      // Remove markdown code blocks if present
+      ritualText = ritualText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      const ritual = JSON.parse(ritualText);
+      console.log("Generated swap ritual:", ritual);
+      
+      return new Response(JSON.stringify({ ritual }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Original synthesis for full week of rituals
+    const partner_one = partnerOneInput;
+    const partner_two = partnerTwoInput;
+    
+    const synthesisPrompt = `You are a creative ritual designer creating a week of shared experiences for a couple. Be creative, unexpected, and delightful.
+
+Partner 1:
+- Energy: ${partner_one.energy}
+- Time: ${partner_one.availability}
+- Budget: ${partner_one.budget}
+- Craving: ${partner_one.craving}
+- Desire: "${partner_one.desire}"
+
+Partner 2:
+- Energy: ${partner_two.energy}
+- Time: ${partner_two.availability}
+- Budget: ${partner_two.budget}
+- Craving: ${partner_two.craving}
+- Desire: "${partner_two.desire}"
+
+Create 4-5 surprising, creative rituals that:
+- Are NOT generic (avoid "sunset picnic", "coffee date" unless adding unique twist)
+- Have personality and sensory details
+- Balance both partners' needs creatively
+- Feel special and memorable
+- Range from quick moments to longer experiences
+- Include unexpected combinations
+- Make people say "wow, I never thought of that!"
+
+Return ONLY valid JSON (no markdown, no explanation) in this exact format:
+[
+  {
+    "title": "Creative ritual name",
+    "category": "Connection|Rest|Fun|Exploration|Comfort|Intimacy",
+    "description": "Vivid, specific description with sensory details (2-3 sentences)",
+    "time_estimate": "30 min|1 hour|1.5 hours|2 hours|3 hours",
+    "budget_band": "Free|$|$$|$$$"
+  }
+]`;
+
+    console.log("Synthesizing rituals with Lovable AI for couple:", coupleId);
+    
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: synthesisPrompt }
         ],
+        temperature: 1.2,
       }),
     });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
-      throw new Error('AI synthesis failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Lovable AI error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "AI rate limit exceeded. Please try again in a moment." }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits depleted. Please add credits to continue." }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      throw new Error(`AI request failed: ${response.status}`);
     }
 
-    const aiData = await aiResponse.json();
-    const ritualText = aiData.choices[0].message.content;
+    const data = await response.json();
+    let ritualsText = data.choices[0].message.content.trim();
     
-    // Parse the JSON response
-    let rituals;
-    try {
-      // Remove markdown code blocks if present
-      const cleanText = ritualText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      rituals = JSON.parse(cleanText);
-    } catch (e) {
-      console.error('Failed to parse AI response:', ritualText);
-      throw new Error('Invalid AI response format');
-    }
-
-    console.log('Generated rituals:', rituals);
+    // Remove markdown code blocks if present
+    ritualsText = ritualsText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    const rituals = JSON.parse(ritualsText);
+    console.log("Generated rituals:", rituals.length);
 
     return new Response(JSON.stringify({ rituals }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error: any) {
-    console.error('Error in synthesize-rituals:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Error in synthesize-rituals function:', error);
+    return new Response(JSON.stringify({ 
+      error: error.message || 'Failed to synthesize rituals',
+      details: error.toString()
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

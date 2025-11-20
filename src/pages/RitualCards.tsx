@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ViewCoupleCodeDialog } from "@/components/ViewCoupleCodeDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const MOCK_RITUALS = [
   {
@@ -46,39 +48,110 @@ const RitualCards = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [couple, setCouple] = useState<any>(null);
   const [showViewCode, setShowViewCode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [swapping, setSwapping] = useState(false);
+  const [weeklyInputs, setWeeklyInputs] = useState<any>(null);
+  const navigate = useNavigate();
 
   const currentCard = cards[currentIndex];
 
-  // Fetch couple data
+  // Fetch couple and rituals
   useEffect(() => {
-    const fetchCouple = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error("Please sign in first");
+          navigate("/auth");
+          return;
+        }
+
+        // Get couple
+        const { data: coupleData } = await supabase
           .from('couples')
           .select('*')
           .or(`partner_one.eq.${user.id},partner_two.eq.${user.id}`)
           .maybeSingle();
-        if (data) setCouple(data);
+        
+        if (!coupleData) {
+          toast.error("Please create or join a couple first");
+          navigate("/");
+          return;
+        }
+        
+        setCouple(coupleData);
+
+        // Get current week's cycle
+        const weekStart = new Date();
+        weekStart.setHours(0, 0, 0, 0);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+
+        const { data: cycle } = await supabase
+          .from('weekly_cycles')
+          .select('*')
+          .eq('couple_id', coupleData.id)
+          .eq('week_start_date', weekStart.toISOString().split('T')[0])
+          .maybeSingle();
+
+        if (cycle?.synthesized_output) {
+          setCards(cycle.synthesized_output as any[]);
+          setWeeklyInputs(cycle);
+        } else {
+          toast.info("No rituals for this week yet. Submit your weekly inputs!");
+          navigate("/input");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load rituals");
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCouple();
-  }, []);
 
-  const handleSwap = () => {
-    // For now, replace with a new mock ritual (different from the ones we have)
-    const newRitual = {
-      id: Date.now(),
-      title: "Sunrise Coffee Date",
-      category: "Connection",
-      description: "Wake up early together and find a spot to watch the sunrise. Bring a thermos of coffee and enjoy the quiet morning moments.",
-      time_estimate: "1 hour",
-      budget_band: "$",
-    };
+    fetchData();
+  }, [navigate]);
+
+  const handleSwap = async () => {
+    if (!weeklyInputs || swapping) return;
     
-    const newCards = [...cards];
-    newCards[currentIndex] = newRitual;
-    setCards(newCards);
+    setSwapping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('synthesize-rituals', {
+        body: {
+          action: 'swap',
+          weeklyInputs: {
+            currentRitual: currentCard,
+            inputs: {
+              partner_one_input: weeklyInputs.partner_one_input,
+              partner_two_input: weeklyInputs.partner_two_input,
+            }
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        if (data.error.includes('rate limit')) {
+          toast.error("Too many requests. Please wait a moment and try again.");
+        } else if (data.error.includes('credits')) {
+          toast.error("AI credits depleted. Please add credits to continue.");
+        } else {
+          toast.error(data.error);
+        }
+        return;
+      }
+
+      const newCards = [...cards];
+      newCards[currentIndex] = { ...data.ritual, id: Date.now() };
+      setCards(newCards);
+      toast.success("New ritual generated!");
+    } catch (error: any) {
+      console.error("Swap error:", error);
+      toast.error("Failed to generate new ritual");
+    } finally {
+      setSwapping(false);
+    }
   };
 
   const handleKeep = () => {
@@ -91,27 +164,40 @@ const RitualCards = () => {
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-calm flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading your rituals...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-calm flex flex-col p-6">
       {/* Header */}
-      <div className="max-w-md mx-auto w-full py-4 relative">
-        <h1 className="text-3xl font-bold text-center text-foreground mb-2">
-          Your Weekly Rituals
-        </h1>
+      <div className="max-w-md mx-auto w-full py-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold text-foreground">
+            Your Weekly Rituals
+          </h1>
+          {couple && (
+            <Button
+              onClick={() => setShowViewCode(true)}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground shrink-0"
+            >
+              <Share2 className="w-4 h-4 mr-1" />
+              <span className="text-xs">Code</span>
+            </Button>
+          )}
+        </div>
         <p className="text-center text-muted-foreground">
           Swipe to keep or swap rituals
         </p>
-        {couple && (
-          <Button
-            onClick={() => setShowViewCode(true)}
-            variant="ghost"
-            size="sm"
-            className="absolute top-4 right-0 text-muted-foreground hover:text-foreground"
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share Code
-          </Button>
-        )}
       </div>
 
       {/* Card Stack */}
@@ -198,18 +284,20 @@ const RitualCards = () => {
       <div className="max-w-md mx-auto w-full flex gap-4 pt-6">
         <Button
           onClick={handleSwap}
+          disabled={swapping}
           size="lg"
           variant="outline"
-          className="flex-1 border-2 border-primary/30 rounded-2xl h-14 text-lg"
+          className="flex-1 border-2 border-primary/30 rounded-2xl h-14 text-lg disabled:opacity-50"
         >
-          <RotateCcw className="w-5 h-5 mr-2" />
-          Swap
+          <RotateCcw className={`w-5 h-5 mr-2 ${swapping ? 'animate-spin' : ''}`} />
+          {swapping ? "Generating..." : "Swap"}
         </Button>
         
         <Button
           onClick={handleKeep}
+          disabled={swapping}
           size="lg"
-          className="flex-1 bg-gradient-ritual text-white hover:opacity-90 rounded-2xl h-14 text-lg"
+          className="flex-1 bg-gradient-ritual text-white hover:opacity-90 rounded-2xl h-14 text-lg disabled:opacity-50"
         >
           <Sparkles className="w-5 h-5 mr-2" />
           Keep
