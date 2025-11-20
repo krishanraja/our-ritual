@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Heart, Sparkles, Users, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ViewCoupleCodeDialog } from "@/components/ViewCoupleCodeDialog";
+import { JoinCoupleDialog } from "@/components/JoinCoupleDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ritualLogo from "@/assets/ritual-logo.png";
@@ -13,6 +14,7 @@ const WaitingRoom = () => {
   const [couple, setCouple] = useState<any>(null);
   const [cycle, setCycle] = useState<any>(null);
   const [showViewCode, setShowViewCode] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const [bothSubmitted, setBothSubmitted] = useState(false);
   const [generatingRituals, setGeneratingRituals] = useState(false);
   const navigate = useNavigate();
@@ -197,13 +199,22 @@ const WaitingRoom = () => {
             <img src={ritualLogo} alt="Ritual" className="h-8" />
             <span className="text-sm font-medium text-muted-foreground">Waiting Room</span>
           </div>
-          <Button
-            onClick={() => navigate("/")}
-            variant="ghost"
-            size="sm"
-          >
-            Back to Home
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowJoin(true)}
+              variant="outline"
+              size="sm"
+            >
+              Join with Code
+            </Button>
+            <Button
+              onClick={() => navigate("/")}
+              variant="ghost"
+              size="sm"
+            >
+              Back to Home
+            </Button>
+          </div>
         </header>
 
         <div className="flex-1 flex items-center justify-center p-6">
@@ -269,15 +280,24 @@ const WaitingRoom = () => {
             <img src={ritualLogo} alt="Ritual" className="h-8" />
             <span className="text-sm font-medium text-muted-foreground">Waiting Room</span>
           </div>
-          <Button
-            onClick={() => setShowViewCode(true)}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            Share Code
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowJoin(true)}
+              variant="outline"
+              size="sm"
+            >
+              Join with Code
+            </Button>
+            <Button
+              onClick={() => setShowViewCode(true)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Share2 className="w-4 h-4" />
+              Share Code
+            </Button>
+          </div>
         </header>
 
         <div className="flex-1 flex items-center justify-center p-6">
@@ -326,15 +346,24 @@ const WaitingRoom = () => {
             {generatingRituals ? "Creating Your Rituals..." : "Waiting Room"}
           </span>
         </div>
-        <Button
-          onClick={() => setShowViewCode(true)}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <Share2 className="w-4 h-4" />
-          Share Code
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowJoin(true)}
+            variant="outline"
+            size="sm"
+          >
+            Join with Code
+          </Button>
+          <Button
+            onClick={() => setShowViewCode(true)}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            Share Code
+          </Button>
+        </div>
       </header>
 
       {/* Content */}
@@ -461,6 +490,7 @@ const WaitingRoom = () => {
         onOpenChange={setShowViewCode} 
         coupleCode={couple.couple_code} 
       />
+      <JoinCoupleDialog open={showJoin} onOpenChange={setShowJoin} />
     </div>
   );
 };

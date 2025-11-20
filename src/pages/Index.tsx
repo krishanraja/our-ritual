@@ -128,6 +128,16 @@ const Index = () => {
           <img src={ritualLogo} alt="Ritual" className="h-8" />
         </div>
         <div className="flex items-center gap-2">
+          {user && !couple && (
+            <Button
+              onClick={() => setShowJoin(true)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              Join with Code
+            </Button>
+          )}
           {couple && (
             <Button
               onClick={() => setShowViewCode(true)}
