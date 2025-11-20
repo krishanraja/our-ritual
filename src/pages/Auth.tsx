@@ -1,19 +1,30 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { JoinCoupleDialog } from "@/components/JoinCoupleDialog";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const navigate = useNavigate();
+
+  // Check if user came here to join a couple
+  useEffect(() => {
+    if (searchParams.get('join') === 'true') {
+      setShowJoin(true);
+      setIsLogin(false); // Switch to signup mode for new users
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Set up listener FIRST
@@ -144,6 +155,8 @@ const Auth = () => {
           </button>
         </div>
       </motion.div>
+      
+      <JoinCoupleDialog open={showJoin} onOpenChange={setShowJoin} />
     </div>
   );
 };
