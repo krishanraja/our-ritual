@@ -121,17 +121,38 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-warm flex flex-col items-center justify-center p-6 relative">
-      {user && (
-        <Button
-          onClick={handleSignOut}
-          variant="ghost"
-          size="icon"
-          className="absolute top-4 right-4"
-        >
-          <LogOut className="w-5 h-5" />
-        </Button>
-      )}
+    <div className="min-h-screen bg-gradient-warm flex flex-col">
+      {/* Professional Header */}
+      <header className="w-full px-6 py-4 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-border/30">
+        <div className="flex items-center gap-3">
+          <img src={ritualLogo} alt="Ritual" className="h-8" />
+        </div>
+        <div className="flex items-center gap-2">
+          {couple && (
+            <Button
+              onClick={() => setShowViewCode(true)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Share2 className="w-4 h-4" />
+              Share Code
+            </Button>
+          )}
+          {user && (
+            <Button
+              onClick={handleSignOut}
+              variant="ghost"
+              size="sm"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          )}
+        </div>
+      </header>
+
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -228,15 +249,6 @@ const Index = () => {
                   View Rituals
                 </Button>
               )}
-              <Button
-                onClick={() => setShowViewCode(true)}
-                variant="ghost"
-                size="sm"
-                className="w-full text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share Couple Code
-              </Button>
             </>
           ) : (
             <>
