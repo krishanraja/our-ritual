@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { useCouple } from '@/contexts/CoupleContext';
 import { ShareDrawer } from './ShareDrawer';
 import { JoinDrawer } from './JoinDrawer';
-import ritualLogo from '@/assets/ritual-logo.png';
+import { RitualLogo } from './RitualLogo';
 import { motion } from 'framer-motion';
 
 interface AppShellProps {
@@ -56,7 +56,7 @@ export const AppShell = ({ children }: AppShellProps) => {
           animate={{ y: 0, opacity: 1 }}
           className="flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50"
         >
-          <img src={ritualLogo} alt="Ritual" className="h-8" />
+          <RitualLogo size="sm" />
           
           <div className="flex items-center gap-2">
             <div className="text-xs text-muted-foreground hidden sm:block">

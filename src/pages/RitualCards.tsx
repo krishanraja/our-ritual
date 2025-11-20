@@ -7,12 +7,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCouple } from '@/contexts/CoupleContext';
 import { usePresence } from '@/hooks/usePresence';
+import { useSampleRituals } from '@/hooks/useSampleRituals';
 import { shareToWhatsApp } from '@/utils/shareUtils';
 import { downloadICS } from '@/utils/calendarUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
-import ritualLogo from '@/assets/ritual-logo.png';
+import { RitualLogo } from '@/components/RitualLogo';
 
 interface Ritual {
   id: string | number;
@@ -21,11 +22,13 @@ interface Ritual {
   time_estimate: string;
   budget_band: string;
   category?: string;
+  is_sample?: boolean;
 }
 
 export default function RitualCards() {
   const { user, couple, currentCycle, refreshCycle } = useCouple();
   const { partnerPresence, isPartnerOnline } = usePresence('rituals-page', 'viewing rituals');
+  const { rituals: fetchedRituals, isShowingSamples } = useSampleRituals();
   const [rituals, setRituals] = useState<Ritual[]>([]);
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -42,24 +45,21 @@ export default function RitualCards() {
       return;
     }
 
-    if (!currentCycle?.synthesized_output) {
-      navigate('/');
-      return;
-    }
-
     const loadRituals = async () => {
       try {
-        const output = currentCycle.synthesized_output as any;
-        setRituals(output.rituals || []);
+        // Use the hook's rituals (samples or real)
+        setRituals(fetchedRituals);
 
-        // Load completions
-        const { data } = await supabase
-          .from('completions')
-          .select('ritual_title')
-          .eq('weekly_cycle_id', currentCycle.id);
+        // Only load completions if we have a real cycle
+        if (currentCycle?.id && !isShowingSamples) {
+          const { data } = await supabase
+            .from('completions')
+            .select('ritual_title')
+            .eq('weekly_cycle_id', currentCycle.id);
 
-        if (data) {
-          setCompletions(new Set(data.map(c => c.ritual_title)));
+          if (data) {
+            setCompletions(new Set(data.map(c => c.ritual_title)));
+          }
         }
       } catch (error) {
         console.error('Error loading rituals:', error);
@@ -86,9 +86,13 @@ export default function RitualCards() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, couple, currentCycle, navigate]);
+  }, [user, couple, currentCycle, navigate, fetchedRituals, isShowingSamples]);
 
   const handleComplete = async (ritual: Ritual) => {
+    if (isShowingSamples) {
+      toast.info('Create real rituals with your partner to track completions!');
+      return;
+    }
     if (!currentCycle || completions.has(ritual.title)) return;
 
     try {
@@ -151,8 +155,8 @@ export default function RitualCards() {
   return (
     <div className="min-h-screen-mobile bg-gradient-warm p-6 pb-24 space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-3">
-        <img src={ritualLogo} alt="Ritual" className="w-16 h-16 mx-auto" />
-        <h1 className="text-3xl font-bold">Your Rituals</h1>
+        <RitualLogo size="md" className="mx-auto" />
+        <h1 className="text-3xl font-bold">{isShowingSamples ? 'Sample Rituals' : 'Your Rituals'}</h1>
         {isPartnerOnline && partnerPresence?.activity && (
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 rounded-full">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />

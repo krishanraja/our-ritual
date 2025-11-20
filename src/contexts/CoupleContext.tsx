@@ -92,7 +92,17 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
       // Realtime subscriptions
       const couplesChannel = supabase
         .channel('couples-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'couples' }, () => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'couples' }, (payload: any) => {
+          // Celebrate when partner joins
+          if (payload.eventType === 'UPDATE' && payload.new.partner_two && !payload.old?.partner_two) {
+            toast.success("🎉 Your partner joined! Time to create rituals together!", { 
+              duration: 5000,
+              action: {
+                label: 'Start',
+                onClick: () => navigate('/input')
+              }
+            });
+          }
           fetchCouple(user.id);
         })
         .subscribe();
