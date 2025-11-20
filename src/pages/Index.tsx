@@ -168,10 +168,7 @@ const Index = () => {
           {!user && (
             <p className="text-sm text-muted-foreground pt-2">
               <button 
-                onClick={() => {
-                  navigate("/auth");
-                  setTimeout(() => setShowJoin(true), 500);
-                }}
+                onClick={() => navigate("/auth?join=true")}
                 className="text-primary hover:underline"
               >
                 Have a partner code?
