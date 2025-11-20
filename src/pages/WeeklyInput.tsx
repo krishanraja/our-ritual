@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ViewCoupleCodeDialog } from "@/components/ViewCoupleCodeDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ritualLogo from "@/assets/ritual-logo.png";
 
 const QUESTIONS = [
   {
@@ -187,7 +188,12 @@ const WeeklyInput = () => {
         toast.loading("Creating your rituals...", { id: "synthesis" });
         
         try {
-          const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('synthesize-rituals', {
+          // Add timeout handling
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), 45000)
+          );
+
+          const invokePromise = supabase.functions.invoke('synthesize-rituals', {
             body: {
               partnerOneInput: updatedCycle.partner_one_input,
               partnerTwoInput: updatedCycle.partner_two_input,
@@ -195,9 +201,14 @@ const WeeklyInput = () => {
             }
           });
 
+          const { data: synthesisData, error: synthesisError } = await Promise.race([
+            invokePromise,
+            timeoutPromise
+          ]) as any;
+
           if (synthesisError) throw synthesisError;
 
-          if (synthesisData.error) {
+          if (synthesisData?.error) {
             toast.error(synthesisData.error, { id: "synthesis" });
             toast.info("Your inputs are saved. Rituals will generate when available.");
             navigate("/");
@@ -268,9 +279,30 @@ const WeeklyInput = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-calm flex flex-col">
+    <div className="min-h-screen bg-gradient-warm flex flex-col">
+      {/* Professional Header */}
+      <header className="w-full px-6 py-4 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-border/30">
+        <div className="flex items-center gap-3">
+          <img src={ritualLogo} alt="Ritual" className="h-8" />
+          <span className="text-sm font-medium text-muted-foreground">Weekly Input</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {couple && (
+            <Button
+              onClick={() => setShowViewCode(true)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Share2 className="w-4 h-4" />
+              Share Code
+            </Button>
+          )}
+        </div>
+      </header>
+
       {/* Progress */}
-      <div className="max-w-md mx-auto w-full space-y-2 mb-6 px-4 sm:px-6 pt-4 safe-top relative">
+      <div className="max-w-md mx-auto w-full space-y-2 mb-6 px-4 sm:px-6 pt-4 safe-top">
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Your weekly input</span>
           <span>{currentStep + 1} / {QUESTIONS.length}</span>
@@ -283,17 +315,6 @@ const WeeklyInput = () => {
             transition={{ duration: 0.3 }}
           />
         </div>
-        {couple && (
-          <Button
-            onClick={() => setShowViewCode(true)}
-            variant="ghost"
-            size="sm"
-            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share Code
-          </Button>
-        )}
       </div>
 
       {/* Question Card */}

@@ -7,6 +7,7 @@ import { ViewCoupleCodeDialog } from "@/components/ViewCoupleCodeDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import ritualLogo from "@/assets/ritual-logo.png";
 
 const MOCK_RITUALS = [
   {
@@ -194,32 +195,38 @@ const RitualCards = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-calm flex flex-col p-6">
-      {/* Header */}
-      <div className="max-w-md mx-auto w-full py-4 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold text-foreground">
-            Your Weekly Rituals
-          </h1>
+    <div className="min-h-screen bg-gradient-warm flex flex-col">
+      {/* Professional Header */}
+      <header className="w-full px-6 py-4 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-border/30">
+        <div className="flex items-center gap-3">
+          <img src={ritualLogo} alt="Ritual" className="h-8" />
+          <span className="text-sm font-medium text-muted-foreground">Your Rituals</span>
+        </div>
+        <div className="flex items-center gap-2">
           {couple && (
             <Button
               onClick={() => setShowViewCode(true)}
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="text-muted-foreground hover:text-foreground shrink-0"
+              className="gap-2"
             >
-              <Share2 className="w-4 h-4 mr-1" />
-              <span className="text-xs">Code</span>
+              <Share2 className="w-4 h-4" />
+              Share Code
             </Button>
           )}
         </div>
-        <p className="text-center text-muted-foreground">
-          Swipe to keep or swap rituals
-        </p>
-      </div>
+      </header>
 
-      {/* Card Stack */}
-      <div className="flex-1 flex items-center justify-center relative px-4">
+      {/* Content */}
+      <div className="flex-1 flex flex-col p-6">
+        <div className="max-w-md mx-auto w-full py-4 mb-4">
+          <p className="text-center text-muted-foreground">
+            Swipe to keep or swap rituals
+          </p>
+        </div>
+
+        {/* Card Stack */}
+        <div className="flex-1 flex items-center justify-center relative px-4">
         <div className="w-full max-w-md h-[500px] relative">
           {/* Background stacked cards */}
           {cards.slice(currentIndex + 1, currentIndex + 3).map((ritual, index) => (
