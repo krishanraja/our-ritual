@@ -72,22 +72,19 @@ export const RitualCard = ({
         </div>
       </div>
 
-      {/* Description - scrollable if needed */}
-      <div className="px-5 pb-3 flex-1 overflow-y-auto">
-        <p className="text-sm text-muted-foreground leading-relaxed">
+      {/* Description */}
+      <div className="px-5 pb-4 flex-none">
+        <p className="text-base leading-relaxed">
           {ritual.description}
         </p>
       </div>
 
-      {/* Why Section */}
+      {/* Why Section - Compact */}
       {ritual.why && (
         <div className="px-5 pb-3 flex-none">
-          <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
-            <span className="text-xs">✨</span>
-            <p className="text-xs text-muted-foreground italic leading-relaxed flex-1">
-              {ritual.why}
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground italic">
+            ✨ {ritual.why}
+          </p>
         </div>
       )}
 
@@ -116,38 +113,42 @@ export const RitualCard = ({
       {/* Actions */}
       {showActions && (
         <div className="p-4 flex-none border-t bg-card/50">
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             {!isComplete && onComplete && (
               <Button 
                 onClick={onComplete}
-                className="flex-1 h-12 bg-gradient-ritual text-primary-foreground hover:opacity-90 rounded-xl"
+                className="w-full h-12 bg-gradient-ritual text-primary-foreground hover:opacity-90 rounded-xl font-semibold"
               >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
+                <CheckCircle2 className="w-5 h-5 mr-2" />
                 Mark as Done
               </Button>
             )}
             {isComplete && (
-              <div className="flex-1 h-12 rounded-xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary font-semibold">
+              <div className="w-full h-12 rounded-xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary font-semibold">
                 <CheckCircle2 className="w-5 h-5 mr-2" />
                 Completed!
               </div>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-xl"
-              onClick={() => shareToWhatsApp(ritual)}
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-xl"
-              onClick={() => downloadICS(ritual)}
-            >
-              <Calendar className="w-4 h-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 h-9 text-xs"
+                onClick={() => shareToWhatsApp(ritual)}
+              >
+                <Share2 className="w-3 h-3 mr-1" />
+                Share
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 h-9 text-xs"
+                onClick={() => downloadICS(ritual)}
+              >
+                <Calendar className="w-3 h-3 mr-1" />
+                Calendar
+              </Button>
+            </div>
           </div>
         </div>
       )}

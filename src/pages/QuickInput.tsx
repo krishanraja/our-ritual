@@ -12,7 +12,7 @@ import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SynthesisAnimation } from '@/components/SynthesisAnimation';
 
-const QUESTIONS = [
+const BASE_QUESTIONS = [
   {
     id: 'energy',
     question: 'How\'s your energy this week?',
@@ -32,13 +32,14 @@ const QUESTIONS = [
     id: 'craving',
     question: 'What are you craving?',
     options: ['Connection', 'Adventure', 'Rest', 'Play']
-  },
-  {
-    id: 'city',
-    question: 'Where are you based?',
-    options: ['New York', 'London', 'Sydney', 'Melbourne']
   }
 ];
+
+const CITY_QUESTION = {
+  id: 'city',
+  question: 'Where are you based?',
+  options: ['New York', 'London', 'Sydney', 'Melbourne']
+};
 
 export default function QuickInput() {
   const { user, couple, currentCycle, loading } = useCouple();
@@ -55,6 +56,10 @@ export default function QuickInput() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [partnerCity, setPartnerCity] = useState<string | null>(null);
+
+  const isPartnerOne = couple?.partner_one === user?.id;
+  const QUESTIONS = isPartnerOne ? [...BASE_QUESTIONS, CITY_QUESTION] : BASE_QUESTIONS;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -71,6 +76,13 @@ export default function QuickInput() {
     const initializeCycle = async () => {
       if (currentCycle?.id) {
         setWeeklyCycleId(currentCycle.id);
+        
+        // If partner 2, get partner 1's city from their input
+        if (!isPartnerOne && currentCycle.partner_one_input) {
+          const p1Input = currentCycle.partner_one_input as any;
+          setPartnerCity(p1Input.city || 'New York');
+          setAnswers(prev => ({ ...prev, city: p1Input.city || 'New York' }));
+        }
         return;
       }
 
@@ -88,6 +100,13 @@ export default function QuickInput() {
 
       if (existingCycle) {
         setWeeklyCycleId(existingCycle.id);
+        
+        // If partner 2, get partner 1's city
+        if (!isPartnerOne && existingCycle.partner_one_input) {
+          const p1Input = existingCycle.partner_one_input as any;
+          setPartnerCity(p1Input.city || 'New York');
+          setAnswers(prev => ({ ...prev, city: p1Input.city || 'New York' }));
+        }
       } else {
         const { data: newCycle, error } = await supabase
           .from('weekly_cycles')
@@ -244,23 +263,33 @@ export default function QuickInput() {
                 className="space-y-8"
               >
                 <h2 className="text-2xl font-bold">{currentQuestion.question}</h2>
-                <RadioGroup
-                  value={answers[currentQuestion.id as keyof typeof answers]}
-                  onValueChange={handleAnswer}
-                  className="space-y-3"
-                >
-                  {currentQuestion.options.map((option) => (
-                    <div
-                      key={option}
-                      className="flex items-center space-x-3 bg-white/80 p-4 rounded-xl border-2 border-transparent has-[:checked]:border-primary transition-all"
-                    >
-                      <RadioGroupItem value={option} id={option} />
-                      <Label htmlFor={option} className="flex-1 cursor-pointer text-base">
-                        {option}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+                
+                {/* Show city info for Partner 2 instead of asking */}
+                {!isPartnerOne && partnerCity && currentStep === QUESTIONS.length - 1 ? (
+                  <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
+                    <p className="text-sm text-muted-foreground">
+                      Planning rituals in <span className="font-semibold text-foreground">{partnerCity}</span>
+                    </p>
+                  </div>
+                ) : (
+                  <RadioGroup
+                    value={answers[currentQuestion.id as keyof typeof answers]}
+                    onValueChange={handleAnswer}
+                    className="space-y-3"
+                  >
+                    {currentQuestion.options.map((option) => (
+                      <div
+                        key={option}
+                        className="flex items-center space-x-3 bg-white/80 p-4 rounded-xl border-2 border-transparent has-[:checked]:border-primary transition-all"
+                      >
+                        <RadioGroupItem value={option} id={option} />
+                        <Label htmlFor={option} className="flex-1 cursor-pointer text-base">
+                          {option}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
               </motion.div>
             ) : (
               <motion.div

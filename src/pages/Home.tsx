@@ -112,6 +112,7 @@ export default function Home() {
   const hasPartnerTwo = !!currentCycle?.partner_two_input;
   const userIsPartnerOne = couple.partner_one === user.id;
   const userSubmitted = userIsPartnerOne ? hasPartnerOne : hasPartnerTwo;
+  const partnerSubmitted = userIsPartnerOne ? hasPartnerTwo : hasPartnerOne;
 
   return (
     <StrictMobileViewport>
@@ -134,10 +135,10 @@ export default function Home() {
               </div>
               <div>
                 <h2 className="text-base font-bold mb-1">
-                  {hasSynthesized ? 'Rituals Ready! 🎉' : userSubmitted ? 'Waiting for Partner' : 'Ready for This Week?'}
+                  {hasSynthesized ? 'Rituals Ready! 🎉' : userSubmitted && partnerSubmitted ? 'Creating Rituals...' : userSubmitted ? 'Waiting for Partner' : 'Ready for This Week?'}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  {hasSynthesized ? 'View this week\'s rituals' : userSubmitted ? 'They haven\'t submitted yet' : 'Create this week\'s rituals together'}
+                  {hasSynthesized ? 'View this week\'s rituals' : userSubmitted && partnerSubmitted ? 'Synthesizing your perfect week' : userSubmitted ? 'They haven\'t submitted yet' : 'Share your preferences for the week'}
                 </p>
               </div>
               {hasSynthesized ? (
