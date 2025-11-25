@@ -19,7 +19,8 @@ serve(async (req) => {
     
     const { action, weeklyInputs, partnerOneInput, partnerTwoInput, coupleId } = await req.json();
     
-    const userCity = partnerOneInput?.city || partnerTwoInput?.city || 'New York';
+    // Partner 1 always sets the city for the couple
+    const userCity = partnerOneInput?.city || 'New York';
     
     // Handle swap action - generate a single alternative ritual
     if (action === 'swap') {
@@ -59,9 +60,10 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
 {
   "title": "Ritual name (creative, not generic)",
   "category": "Connection|Rest|Fun|Exploration|Comfort|Intimacy",
-  "description": "Vivid, specific description with sensory details (2-3 sentences)",
+  "description": "One vivid sentence (max 25 words) - focus on the feeling, not logistics",
   "time_estimate": "30 min|1 hour|1.5 hours|2 hours|3 hours",
-  "budget_band": "Free|$|$$|$$$"
+  "budget_band": "Free|$|$$|$$$",
+  "why": "One short phrase (5-8 words) about why this works for them"
 }`;
 
       console.log("Generating swap ritual with Lovable AI");
@@ -163,10 +165,10 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
   {
     "title": "Creative ritual name",
     "category": "Connection|Rest|Fun|Exploration|Comfort|Intimacy",
-    "description": "Vivid, specific description with sensory details (2-3 sentences)",
+    "description": "One vivid sentence (max 25 words) - focus on the feeling, not logistics",
     "time_estimate": "30 min|1 hour|1.5 hours|2 hours|3 hours",
     "budget_band": "Free|$|$$|$$$",
-    "why": "One sentence explaining how this balances both partners' needs/desires"
+    "why": "One short phrase (5-8 words) about why this works for them"
   }
 ]`;
 
