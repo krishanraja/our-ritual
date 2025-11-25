@@ -24,22 +24,6 @@ export const AppShell = ({ children }: AppShellProps) => {
   const isAuthPage = location.pathname === '/auth';
   const showNav = user && !isAuthPage;
 
-  useEffect(() => {
-    const handleOpenShare = () => setShareOpen(true);
-    const handleOpenJoin = () => setJoinOpen(true);
-    const handleOpenCreate = () => setCreateOpen(true);
-    
-    window.addEventListener('openShareDrawer', handleOpenShare);
-    window.addEventListener('openJoinDrawer', handleOpenJoin);
-    window.addEventListener('openCreateDialog', handleOpenCreate);
-    
-    return () => {
-      window.removeEventListener('openShareDrawer', handleOpenShare);
-      window.removeEventListener('openJoinDrawer', handleOpenJoin);
-      window.removeEventListener('openCreateDialog', handleOpenCreate);
-    };
-  }, []);
-
   const navItems = [
     { path: '/home', icon: Home, label: 'Home' },
     { path: '/input', icon: Calendar, label: 'This Week' },

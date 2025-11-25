@@ -12,9 +12,6 @@ interface CoupleContextType {
   loading: boolean;
   refreshCouple: () => Promise<void>;
   refreshCycle: () => Promise<void>;
-  createCouple: () => void;
-  shareCode: () => void;
-  joinCouple: () => void;
   leaveCouple: () => Promise<void>;
 }
 
@@ -189,21 +186,6 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
     if (couple) await fetchCycle(couple.id);
   };
 
-  const createCouple = () => {
-    const event = new CustomEvent('openCreateDialog');
-    window.dispatchEvent(event);
-  };
-
-  const shareCode = () => {
-    const event = new CustomEvent('openShareDrawer');
-    window.dispatchEvent(event);
-  };
-
-  const joinCouple = () => {
-    const event = new CustomEvent('openJoinDrawer');
-    window.dispatchEvent(event);
-  };
-
   const leaveCouple = async () => {
     if (!couple || !user) {
       toast.error("No couple to leave");
@@ -258,9 +240,6 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
       loading,
       refreshCouple,
       refreshCycle,
-      createCouple,
-      shareCode,
-      joinCouple,
       leaveCouple,
     }}>
       {children}

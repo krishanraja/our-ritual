@@ -10,12 +10,18 @@ import { RitualLogo } from '@/components/RitualLogo';
 import { WaitingForPartner } from '@/components/WaitingForPartner';
 import { StrictMobileViewport } from '@/components/StrictMobileViewport';
 import { SynthesisAnimation } from '@/components/SynthesisAnimation';
+import { CreateCoupleDialog } from '@/components/CreateCoupleDialog';
+import { ShareDrawer } from '@/components/ShareDrawer';
+import { JoinDrawer } from '@/components/JoinDrawer';
 
 export default function Home() {
-  const { user, couple, partnerProfile, currentCycle, loading, createCouple, shareCode, joinCouple } = useCouple();
+  const { user, couple, partnerProfile, currentCycle, loading } = useCouple();
   const navigate = useNavigate();
   const [nudgeBannerDismissed, setNudgeBannerDismissed] = useState(false);
   const [slowLoading, setSlowLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
 
   // Show slow loading indicator after 3 seconds
   useEffect(() => {
@@ -43,10 +49,10 @@ export default function Home() {
       const pendingAction = sessionStorage.getItem('pendingAction');
       if (pendingAction === 'join') {
         sessionStorage.removeItem('pendingAction');
-        setTimeout(() => joinCouple(), 300); // Open join drawer after a brief delay
+        setTimeout(() => setJoinOpen(true), 300);
       }
     }
-  }, [user, loading, joinCouple]);
+  }, [user, loading]);
 
   // Smart redirect: Auto-navigate to rituals when ready
   useEffect(() => {
@@ -83,15 +89,17 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">Create weekly rituals together</p>
             </div>
             <div className="space-y-2">
-              <Button onClick={createCouple} className="w-full bg-gradient-ritual text-white h-12 rounded-xl">
+              <Button onClick={() => setCreateOpen(true)} className="w-full bg-gradient-ritual text-white h-12 rounded-xl">
                 <Heart className="w-4 h-4 mr-2" />Start a Ritual Space
               </Button>
-              <Button onClick={joinCouple} variant="outline" className="w-full h-12 rounded-xl">
+              <Button onClick={() => setJoinOpen(true)} variant="outline" className="w-full h-12 rounded-xl">
                 I Have a Code
               </Button>
             </div>
           </motion.div>
         </div>
+        <CreateCoupleDialog open={createOpen} onOpenChange={setCreateOpen} />
+        <JoinDrawer open={joinOpen} onOpenChange={setJoinOpen} />
       </StrictMobileViewport>
     );
   }
@@ -119,7 +127,7 @@ export default function Home() {
 
             {/* Primary CTA */}
             <Button 
-              onClick={shareCode} 
+              onClick={() => setShareOpen(true)} 
               size="lg"
               className="w-full h-14 bg-gradient-ritual text-white rounded-xl text-base"
             >
@@ -131,7 +139,7 @@ export default function Home() {
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-2">Or</p>
               <Button 
-                onClick={joinCouple}
+                onClick={() => setJoinOpen(true)}
                 variant="outline"
                 className="w-full h-12 rounded-xl"
               >
@@ -155,6 +163,12 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
+        <ShareDrawer 
+          open={shareOpen} 
+          onOpenChange={setShareOpen}
+          coupleCode={couple.couple_code}
+        />
+        <JoinDrawer open={joinOpen} onOpenChange={setJoinOpen} />
       </StrictMobileViewport>
     );
   }
@@ -250,6 +264,12 @@ export default function Home() {
           </motion.div>
         </div>
       </div>
+      <ShareDrawer 
+        open={shareOpen} 
+        onOpenChange={setShareOpen}
+        coupleCode={couple.couple_code}
+      />
+      <JoinDrawer open={joinOpen} onOpenChange={setJoinOpen} />
     </StrictMobileViewport>
   );
 }
