@@ -10,12 +10,16 @@ import { LocationToggle, City } from '@/components/LocationToggle';
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useSEO, addStructuredData, getLocationStructuredData } from '@/hooks/useSEO';
+import { ShareDrawer } from '@/components/ShareDrawer';
+import { JoinDrawer } from '@/components/JoinDrawer';
 
 export default function Profile() {
-  const { user, couple, partnerProfile, shareCode, joinCouple, leaveCouple } = useCouple();
+  const { user, couple, partnerProfile, leaveCouple } = useCouple();
   const navigate = useNavigate();
   const [selectedCity, setSelectedCity] = useState<City>('New York');
   const [loading, setLoading] = useState(true);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
 
   // SEO for profile page
   useSEO({
@@ -147,7 +151,7 @@ export default function Profile() {
               <>
                 <Card className="p-4 bg-white/90">
                   <Button
-                    onClick={shareCode}
+                    onClick={() => setShareOpen(true)}
                     variant="ghost"
                     className="w-full justify-start"
                   >
@@ -170,7 +174,7 @@ export default function Profile() {
             ) : (
               <Card className="p-4 bg-white/90">
                 <Button
-                  onClick={joinCouple}
+                  onClick={() => setJoinOpen(true)}
                   variant="ghost"
                   className="w-full justify-start"
                 >
@@ -197,6 +201,14 @@ export default function Profile() {
             <p>Made with 💕 for shared moments</p>
           </div>
         </div>
+        {couple && (
+          <ShareDrawer 
+            open={shareOpen} 
+            onOpenChange={setShareOpen}
+            coupleCode={couple.couple_code}
+          />
+        )}
+        <JoinDrawer open={joinOpen} onOpenChange={setJoinOpen} />
       </div>
     </StrictMobileViewport>
   );
