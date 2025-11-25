@@ -5,19 +5,19 @@ import { X, MapPin, Heart, Sparkles, TrendingUp } from 'lucide-react';
 import { RitualLogo } from '@/components/RitualLogo';
 import { useState, useEffect } from 'react';
 import { useSEO, addStructuredData } from '@/hooks/useSEO';
-
 export default function Landing() {
   const navigate = useNavigate();
-  const { user } = useCouple();
+  const {
+    user
+  } = useCouple();
   const [showAuthBanner, setShowAuthBanner] = useState(true);
 
   // SEO optimization
   useSEO({
     title: 'Create Meaningful Weekly Rituals with Your Partner',
     description: 'Build meaningful weekly rituals with your partner. AI-powered ritual suggestions tailored to your location in London, Sydney, Melbourne, or New York. Track completions, build streaks, and strengthen your relationship.',
-    keywords: 'relationship rituals, couple activities, weekly rituals, relationship building, shared moments, couple goals, date ideas, relationship app, partner activities',
+    keywords: 'relationship rituals, couple activities, weekly rituals, relationship building, shared moments, couple goals, date ideas, relationship app, partner activities'
   });
-
   useEffect(() => {
     // Add structured data for landing page
     addStructuredData({
@@ -31,23 +31,14 @@ export default function Landing() {
       offers: {
         '@type': 'Offer',
         price: '0',
-        priceCurrency: 'USD',
+        priceCurrency: 'USD'
       },
-      featureList: [
-        'AI-powered ritual suggestions',
-        'Location-based activities in London, Sydney, Melbourne, and New York',
-        'Partner synchronization and ranking',
-        'Streak tracking and gamification',
-        'Calendar integration',
-      ],
+      featureList: ['AI-powered ritual suggestions', 'Location-based activities in London, Sydney, Melbourne, and New York', 'Partner synchronization and ranking', 'Streak tracking and gamification', 'Calendar integration']
     });
   }, []);
-
-  return (
-    <div className="h-screen bg-gradient-warm overflow-hidden flex flex-col">
+  return <div className="h-screen bg-gradient-warm overflow-hidden flex flex-col">
       {/* Authenticated User Banner */}
-      {user && showAuthBanner && (
-        <div className="flex-none px-4 py-2 bg-primary/10 backdrop-blur-sm border-b border-primary/20">
+      {user && showAuthBanner && <div className="flex-none px-4 py-2 bg-primary/10 backdrop-blur-sm border-b border-primary/20">
           <div className="flex items-center justify-between">
             <p className="text-xs text-foreground">
               You're signed in! <button onClick={() => navigate('/home')} className="underline font-semibold">Go to Dashboard →</button>
@@ -56,8 +47,7 @@ export default function Landing() {
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Main content - vertically centered */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 space-y-8">
@@ -69,9 +59,7 @@ export default function Landing() {
           <h1 className="text-2xl font-bold text-foreground leading-tight">
             Create Meaningful Weekly Rituals with Your Partner
           </h1>
-          <p className="text-sm text-foreground/70 max-w-sm mx-auto leading-relaxed">
-            Spend 2 minutes a week syncing, and explore and schedule fresh, local ideas that will strengthen your bond with one another.
-          </p>
+          <p className="text-sm text-foreground/70 max-w-sm mx-auto leading-relaxed">Spend 2 minutes a week syncing, explore & schedule fresh, local ideas that will strengthen your bond with one another.</p>
           
           {/* Feature highlights */}
           <div className="flex flex-wrap justify-center gap-3 pt-2">
@@ -96,20 +84,11 @@ export default function Landing() {
         
         {/* CTA Buttons */}
         <div className="w-full max-w-sm space-y-3">
-          <Button 
-            onClick={() => navigate('/auth')}
-            size="lg"
-            className="w-full h-14 text-base bg-gradient-ritual text-white"
-          >
+          <Button onClick={() => navigate('/auth')} size="lg" className="w-full h-14 text-base bg-gradient-ritual text-white">
             Start New Ritual
           </Button>
           
-          <Button 
-            onClick={() => navigate('/auth?join=true')}
-            variant="outline"
-            size="lg"
-            className="w-full h-14 text-base"
-          >
+          <Button onClick={() => navigate('/auth?join=true')} variant="outline" size="lg" className="w-full h-14 text-base">
             Join Your Partner
           </Button>
         </div>
@@ -119,6 +98,5 @@ export default function Landing() {
           Already have an account? <button onClick={() => navigate('/auth')} className="underline">Sign In</button>
         </p>
       </div>
-    </div>
-  );
+    </div>;
 }
