@@ -200,8 +200,8 @@ export default function RitualPicker() {
   };
 
   const renderRankingStep = () => (
-    <div className="p-4 space-y-4">
-      <div className="text-center mb-4">
+    <div className="h-full flex flex-col p-4">
+      <div className="flex-none text-center mb-4">
         <h2 className="text-xl font-bold mb-2">Pick Your Top 3</h2>
         <p className="text-sm text-muted-foreground">
           Tap to rank: 1st choice, 2nd choice, 3rd choice
@@ -209,7 +209,7 @@ export default function RitualPicker() {
       </div>
 
       {/* Selected Ranks Display */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="flex-none grid grid-cols-3 gap-2 mb-4">
         {[1, 2, 3].map(rank => (
           <div key={rank} className="text-center">
             <div 
@@ -237,7 +237,7 @@ export default function RitualPicker() {
       </div>
 
       {/* Ritual Cards */}
-      <div className="space-y-3">
+      <div className="flex-1 space-y-3 overflow-y-auto min-h-0 pb-4">
         {rituals.map((ritual, idx) => {
           const currentRank = Object.entries(selectedRanks).find(([_, r]) => r?.title === ritual.title)?.[0];
           return (
@@ -284,26 +284,28 @@ export default function RitualPicker() {
         })}
       </div>
 
-      <Button
-        onClick={handleSubmitRankings}
-        disabled={!selectedRanks[1] || !selectedRanks[2] || !selectedRanks[3]}
-        className="w-full h-12 bg-gradient-ritual text-white"
-      >
-        Next: Pick a Time
-      </Button>
+      <div className="flex-none pt-2">
+        <Button
+          onClick={handleSubmitRankings}
+          disabled={!selectedRanks[1] || !selectedRanks[2] || !selectedRanks[3]}
+          className="w-full h-12 bg-gradient-ritual text-white"
+        >
+          Next: Pick a Time
+        </Button>
+      </div>
     </div>
   );
 
   const renderScheduleStep = () => (
-    <div className="p-4 space-y-4 h-full overflow-y-auto">
-      <div className="text-center mb-4">
+    <div className="h-full flex flex-col p-4 overflow-y-auto min-h-0">
+      <div className="flex-none text-center mb-4">
         <h2 className="text-xl font-bold mb-2">When works for you?</h2>
         <p className="text-sm text-muted-foreground">
           For your top pick: {selectedRanks[1]?.title}
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="flex-1 space-y-4 min-h-0">
         <div>
           <label className="text-sm font-semibold mb-2 block">Pick a Date</label>
           <Calendar
@@ -326,7 +328,7 @@ export default function RitualPicker() {
         </div>
       </div>
 
-      <div className="flex gap-2 pb-4">
+      <div className="flex-none flex gap-2 pt-4">
         <Button
           onClick={() => setStep('rank')}
           variant="outline"
@@ -376,7 +378,7 @@ export default function RitualPicker() {
           <RitualLogo size="xs" />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0">
           <AnimatePresence mode="wait">
             {step === 'rank' && (
               <motion.div
@@ -384,6 +386,7 @@ export default function RitualPicker() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
+                className="h-full"
               >
                 {renderRankingStep()}
               </motion.div>
@@ -394,6 +397,7 @@ export default function RitualPicker() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
+                className="h-full"
               >
                 {renderScheduleStep()}
               </motion.div>
@@ -403,6 +407,7 @@ export default function RitualPicker() {
                 key="waiting"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                className="h-full"
               >
                 {renderWaitingStep()}
               </motion.div>
@@ -412,6 +417,7 @@ export default function RitualPicker() {
                 key="agreement"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                className="h-full"
               >
                 <AgreementGame
                   myPreferences={Object.entries(selectedRanks).map(([rank, ritual]) => ({

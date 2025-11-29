@@ -106,10 +106,10 @@ serve(async (req) => {
       }
     );
 
-    const { action, currentRitual, coupleId, partnerOneInput, partnerTwoInput } = await req.json();
+    const { action, currentRitual, coupleId, partnerOneInput, partnerTwoInput, userCity } = await req.json();
 
-    // Get location context
-    const preferredCity = (partnerOneInput?.location || 'New York') as City;
+    // Get location context - use userCity parameter that's actually sent from the client
+    const preferredCity = (userCity || 'New York') as City;
     const locationContext = getLocationContext(preferredCity);
     
     console.log('Location context:', locationContext);
