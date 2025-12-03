@@ -12,86 +12,95 @@
 
 ## Color System
 
-### Core Colors (HSL)
+### Core Colors (HSL) - Lavender/Blush Theme
 
 ```css
-/* Primary - Warm coral/pink */
---primary: 16 90% 66%;         /* Main brand color */
+/* Primary - Soft Lavender */
+--primary: 270 50% 70%;
 --primary-foreground: 0 0% 100%;
 
-/* Secondary - Soft peach */
---secondary: 30 80% 88%;
---secondary-foreground: 16 10% 20%;
+/* Secondary - Blush Pink */
+--secondary: 340 100% 92%;
+--secondary-foreground: 340 50% 30%;
 
-/* Accent - Vibrant coral */
---accent: 16 100% 70%;
---accent-foreground: 0 0% 100%;
+/* Accent - Light Lavender */
+--accent: 270 45% 85%;
+--accent-foreground: 270 30% 30%;
 
-/* Background - Warm white */
---background: 30 20% 98%;
---foreground: 16 10% 10%;
+/* Background - Warm Cream */
+--background: 40 50% 97%;
+--foreground: 270 15% 25%;
 
-/* Muted - Soft neutral */
---muted: 30 10% 92%;
---muted-foreground: 16 5% 45%;
+/* Muted - Sage Green */
+--muted: 120 30% 90%;
+--muted-foreground: 120 15% 40%;
 
-/* Card - Elevated surface */
+/* Card - Pure White */
 --card: 0 0% 100%;
---card-foreground: 16 10% 10%;
+--card-foreground: 270 15% 25%;
 
-/* Destructive - Error red */
+/* Destructive - Error Red */
 --destructive: 0 84% 60%;
 --destructive-foreground: 0 0% 100%;
 
-/* Border - Subtle division */
---border: 30 10% 90%;
---input: 30 10% 90%;
---ring: 16 90% 66%;
+/* Border - Soft Lavender */
+--border: 270 20% 88%;
+--input: 270 20% 88%;
+--ring: 270 50% 70%;
+```
+
+### Custom Ritual Colors
+
+```css
+/* Custom palette tokens */
+--lavender: 270 50% 85%;
+--lavender-light: 270 50% 95%;
+--blush: 340 100% 92%;
+--blush-light: 340 100% 96%;
+--sage: 120 30% 85%;
+--sage-light: 120 30% 92%;
 ```
 
 ### Gradient System
 
 ```css
-/* Warm gradient (primary use) */
-.bg-gradient-warm {
-  background: linear-gradient(
-    135deg,
-    hsl(30 60% 96%) 0%,
-    hsl(16 60% 95%) 50%,
-    hsl(10 50% 94%) 100%
-  );
-}
-
-/* Ritual gradient (CTAs, emphasis) */
+/* Ritual gradient (primary CTAs, emphasis) */
 .bg-gradient-ritual {
-  background: linear-gradient(
-    135deg,
-    hsl(16 90% 66%) 0%,
-    hsl(350 80% 70%) 100%
-  );
+  background: linear-gradient(135deg, hsl(270 50% 85%), hsl(340 100% 92%));
 }
 
-/* Hover states - slightly darker */
-.hover\:bg-gradient-ritual-dark {
-  background: linear-gradient(
-    135deg,
-    hsl(16 90% 60%) 0%,
-    hsl(350 80% 64%) 100%
-  );
+/* Warm gradient (page backgrounds) */
+.bg-gradient-warm {
+  background: linear-gradient(135deg, hsl(340 100% 96%), hsl(40 60% 95%));
 }
+
+/* Calm gradient (secondary surfaces) */
+.bg-gradient-calm {
+  background: linear-gradient(180deg, hsl(270 50% 95%), hsl(120 30% 92%));
+}
+```
+
+### Shadow System
+
+```css
+/* Soft shadow for cards */
+--shadow-soft: 0 8px 32px -8px hsl(270 30% 70% / 0.2);
+
+/* Card elevation shadow */
+--shadow-card: 0 4px 24px -4px hsl(270 20% 60% / 0.15);
 ```
 
 ### Color Usage Guidelines
 
-**Primary:** 
+**Primary (Lavender):**
 - Call-to-action buttons
 - Active nav items
 - Key information highlights
-- Status indicators
+- Focus rings
 
-**Secondary:**
+**Secondary (Blush):**
 - Secondary actions
-- Backgrounds for cards
+- Backgrounds for emphasis cards
 - Hover states
 
 **Accent:**
@@ -99,7 +108,7 @@
 - Celebration moments
 - Important badges
 
-**Muted:**
+**Muted (Sage):**
 - Descriptive text
 - Placeholders
 - Disabled states
@@ -273,6 +282,10 @@ transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 .transition-fast { transition-duration: 150ms; }
 .transition { transition-duration: 200ms; }
 .transition-slow { transition-duration: 300ms; }
+
+/* Custom transitions */
+--transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+--transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 ```
 
 ### Framer Motion Patterns
@@ -396,7 +409,20 @@ transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 
 ## Dark Mode
 
-Currently not implemented. Future consideration.
+Dark mode is implemented with the following adjustments:
+
+```css
+.dark {
+  --background: 270 20% 12%;
+  --foreground: 270 10% 95%;
+  --card: 270 20% 15%;
+  --primary: 270 50% 65%;
+  --secondary: 340 50% 30%;
+  --muted: 120 15% 25%;
+  --accent: 270 40% 25%;
+  --border: 270 20% 22%;
+}
+```
 
 ## Accessibility
 

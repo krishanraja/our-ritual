@@ -12,7 +12,7 @@ import { StrictMobileViewport } from '@/components/StrictMobileViewport';
 import { SynthesisAnimation } from '@/components/SynthesisAnimation';
 import { CreateCoupleDialog } from '@/components/CreateCoupleDialog';
 import { JoinDrawer } from '@/components/JoinDrawer';
-import { PostRitualCheckin } from '@/components/PostRitualCheckin';
+import { EnhancedPostRitualCheckin } from '@/components/EnhancedPostRitualCheckin';
 import { format, isPast, parseISO } from 'date-fns';
 
 export default function Home() {
@@ -279,11 +279,14 @@ export default function Home() {
             currentCycleId={currentCycle.id}
             lastNudgedAt={currentCycle.nudged_at}
           />
-          {showPostRitualCheckin && currentCycle?.agreed_ritual && (
-            <PostRitualCheckin
+          {showPostRitualCheckin && currentCycle?.agreed_ritual && user && (
+            <EnhancedPostRitualCheckin
               coupleId={couple.id}
               cycleId={currentCycle.id}
+              userId={user.id}
               ritualTitle={(currentCycle.agreed_ritual as any)?.title || 'Ritual'}
+              ritualDescription={(currentCycle.agreed_ritual as any)?.description}
+              agreedDate={currentCycle.agreed_date || ''}
               onComplete={() => setShowPostRitualCheckin(false)}
               onDismiss={() => setShowPostRitualCheckin(false)}
             />
@@ -401,11 +404,14 @@ export default function Home() {
           )}
         </div>
       </div>
-      {showPostRitualCheckin && hasAgreedRitual && (
-        <PostRitualCheckin
+      {showPostRitualCheckin && hasAgreedRitual && user && (
+        <EnhancedPostRitualCheckin
           coupleId={couple.id}
           cycleId={currentCycle.id}
+          userId={user.id}
           ritualTitle={(currentCycle.agreed_ritual as any)?.title || 'Ritual'}
+          ritualDescription={(currentCycle.agreed_ritual as any)?.description}
+          agreedDate={currentCycle.agreed_date || ''}
           onComplete={() => setShowPostRitualCheckin(false)}
           onDismiss={() => setShowPostRitualCheckin(false)}
         />

@@ -56,14 +56,32 @@ export default function RitualPicker() {
           setRituals(synthesized.rituals);
         }
 
-        // Check if user already submitted preferences
+        // Check if user already submitted preferences and restore their selections
         const { data: myPrefs } = await supabase
           .from('ritual_preferences')
           .select('*')
           .eq('weekly_cycle_id', currentCycle.id)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .order('rank', { ascending: true });
 
         if (myPrefs && myPrefs.length > 0) {
+          // Restore user's selections from database
+          const restoredRanks: { [key: number]: Ritual | null } = { 1: null, 2: null, 3: null };
+          myPrefs.forEach((pref: any) => {
+            if (pref.rank >= 1 && pref.rank <= 3 && pref.ritual_data) {
+              restoredRanks[pref.rank] = pref.ritual_data as Ritual;
+            }
+          });
+          setSelectedRanks(restoredRanks);
+          
+          // Restore date/time from first preference
+          if (myPrefs[0]?.proposed_date) {
+            setProposedDate(new Date(myPrefs[0].proposed_date));
+          }
+          if (myPrefs[0]?.proposed_time) {
+            setProposedTime(myPrefs[0].proposed_time);
+          }
+          
           // Already submitted, check partner status
           setStep('waiting');
         }
