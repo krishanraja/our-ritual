@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Copy, Check } from "lucide-react";
-import { toast } from "sonner";
 
 interface ViewCoupleCodeDialogProps {
   open: boolean;
@@ -16,7 +15,6 @@ export const ViewCoupleCodeDialog = ({ open, onOpenChange, coupleCode }: ViewCou
   const copyCode = () => {
     navigator.clipboard.writeText(coupleCode);
     setCopied(true);
-    toast.success("Code copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -34,7 +32,7 @@ export const ViewCoupleCodeDialog = ({ open, onOpenChange, coupleCode }: ViewCou
             Share this code with your partner so they can join your ritual space
           </p>
           
-          <div className="bg-white/80 rounded-2xl p-6 space-y-4">
+          <div className="bg-white/80 dark:bg-background/80 rounded-2xl p-6 space-y-4">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">Couple Code</p>
               <p className="text-4xl font-bold text-primary tracking-wider">
@@ -49,7 +47,7 @@ export const ViewCoupleCodeDialog = ({ open, onOpenChange, coupleCode }: ViewCou
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4 mr-2" />
+                  <Check className="w-4 h-4 mr-2 text-green-600" />
                   Copied!
                 </>
               ) : (

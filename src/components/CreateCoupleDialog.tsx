@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, MessageCircle, Mail } from "lucide-react";
-import { toast } from "sonner";
+import { Copy, Check, MessageCircle, Mail, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCouple } from "@/contexts/CoupleContext";
 import { shareCodeToWhatsApp, shareCodeToSMS } from "@/utils/shareUtils";
@@ -17,6 +16,7 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isExistingCouple, setIsExistingCouple] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { refreshCouple } = useCouple();
 
   useEffect(() => {
@@ -27,10 +27,11 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
 
   const generateOrFetchCode = async () => {
     setLoading(true);
+    setError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Please sign in first");
+        setError("Please sign in first");
         return;
       }
 
@@ -79,7 +80,7 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
         
         if (!existing) {
           // Insert new couple
-          const { error } = await supabase
+          const { error: insertError } = await supabase
             .from('couples')
             .insert({
               partner_one: user.id,
@@ -88,17 +89,16 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
               code_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             });
 
-          if (error) {
-            if (error.code === '23505') {
+          if (insertError) {
+            if (insertError.code === '23505') {
               attempts++;
               continue;
             }
-            throw error;
+            throw insertError;
           }
 
           setCoupleCode(code);
           setIsExistingCouple(false);
-          toast.success("Couple created! Code expires in 24 hours.");
           await refreshCouple();
           break;
         }
@@ -108,8 +108,8 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
       if (attempts >= 10) {
         throw new Error("Unable to generate unique code. Please try again.");
       }
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,6 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
   const copyCode = () => {
     navigator.clipboard.writeText(coupleCode);
     setCopied(true);
-    toast.success("Code copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -126,6 +125,7 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
     setCoupleCode("");
     setCopied(false);
     setIsExistingCouple(false);
+    setError(null);
     onOpenChange(false);
   };
 
@@ -135,6 +135,14 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
         {loading ? (
           <div className="py-12 text-center">
             <p className="text-lg text-muted-foreground">Creating your ritual space...</p>
+          </div>
+        ) : error ? (
+          <div className="py-8 text-center space-y-4">
+            <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
+            <p className="text-destructive">{error}</p>
+            <Button onClick={generateOrFetchCode} variant="outline">
+              Try Again
+            </Button>
           </div>
         ) : (
           <>
@@ -151,7 +159,13 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
                 }
               </p>
               
-              <div className="bg-white/80 rounded-2xl p-6 space-y-4">
+              {!isExistingCouple && (
+                <p className="text-center text-sm text-green-600 dark:text-green-400">
+                  ✓ Couple created! Code expires in 24 hours.
+                </p>
+              )}
+              
+              <div className="bg-white/80 dark:bg-background/80 rounded-2xl p-6 space-y-4">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-2">Couple Code</p>
                   <p className="text-3xl font-bold text-primary tracking-wider font-mono">
@@ -187,7 +201,7 @@ export const CreateCoupleDialog = ({ open, onOpenChange }: CreateCoupleDialogPro
                   >
                     {copied ? (
                       <>
-                        <Check className="w-4 h-4 mr-2" />
+                        <Check className="w-4 h-4 mr-2 text-green-600" />
                         Copied!
                       </>
                     ) : (
