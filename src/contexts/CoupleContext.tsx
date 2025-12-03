@@ -193,7 +193,7 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
           }
           
           if (synthesisReady) {
-            navigate('/rituals');
+            navigate('/picker');
           }
         })
         .subscribe();

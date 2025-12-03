@@ -1,7 +1,7 @@
 import { useCouple } from '@/contexts/CoupleContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { LogOut, UserPlus, UserMinus, MapPin, Copy, Check, Calendar, Heart } from 'lucide-react';
+import { LogOut, UserPlus, UserMinus, MapPin, Copy, Check, Calendar, Heart, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,6 +11,9 @@ import { useState, useEffect } from 'react';
 import { useSEO, addStructuredData, getLocationStructuredData } from '@/hooks/useSEO';
 import { NotificationContainer } from '@/components/InlineNotification';
 import { JoinDrawer } from '@/components/JoinDrawer';
+import { BucketListManager } from '@/components/BucketListManager';
+import { LeaveConfirmDialog } from '@/components/LeaveConfirmDialog';
+import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { format } from 'date-fns';
 
 export default function Profile() {
@@ -21,6 +24,8 @@ export default function Profile() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // SEO for profile page
   useSEO({
@@ -31,6 +36,8 @@ export default function Profile() {
   useEffect(() => {
     if (user && couple) {
       loadPreferredCity();
+    } else {
+      setLoading(false);
     }
   }, [user, couple]);
 
@@ -92,21 +99,19 @@ export default function Profile() {
   };
 
   const handleLeaveCouple = async () => {
-    if (confirm('Are you sure you want to leave this couple? This cannot be undone.')) {
-      const result = await leaveCouple();
-      if (result.success) {
-        setNotification({ type: 'success', message: 'You have left the couple' });
-        setTimeout(() => navigate('/home'), 1500);
-      } else {
-        setNotification({ type: 'error', message: result.error || 'Failed to leave couple' });
-      }
+    const result = await leaveCouple();
+    if (result.success) {
+      setNotification({ type: 'success', message: 'You have left the couple' });
+      setTimeout(() => navigate('/home'), 1500);
+    } else {
+      setNotification({ type: 'error', message: result.error || 'Failed to leave couple' });
     }
   };
 
   return (
     <StrictMobileViewport>
       <div className="h-full bg-gradient-warm overflow-y-auto">
-        <div className="p-4 space-y-4 flex flex-col justify-center min-h-full">
+        <div className="p-4 space-y-4 flex flex-col min-h-full">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,7 +145,7 @@ export default function Profile() {
             />
 
             {/* This Week's Ritual */}
-            {currentCycle?.agreement_reached && currentCycle?.agreed_ritual && (
+            {currentCycle?.agreement_reached && currentCycle?.agreed_ritual && currentCycle?.agreed_date && (
               <Card 
                 className="p-4 bg-gradient-ritual text-white cursor-pointer hover:shadow-lg transition-shadow"
                 onClick={() => navigate('/rituals')}
@@ -181,6 +186,9 @@ export default function Profile() {
               </div>
             </Card>
 
+            {/* Bucket List Section */}
+            {couple && <BucketListManager />}
+
             {couple ? (
               <>
                 <Card className="p-4 bg-white/90">
@@ -218,7 +226,7 @@ export default function Profile() {
 
                 <Card className="p-4 bg-white/90">
                   <Button
-                    onClick={handleLeaveCouple}
+                    onClick={() => setLeaveDialogOpen(true)}
                     variant="ghost"
                     className="w-full justify-start text-destructive hover:text-destructive"
                   >
@@ -250,14 +258,38 @@ export default function Profile() {
                 <span>Sign Out</span>
               </Button>
             </Card>
+
+            {/* Danger Zone */}
+            <Card className="p-4 bg-destructive/5 border-destructive/20">
+              <p className="text-xs text-destructive font-semibold mb-3">Danger Zone</p>
+              <Button
+                onClick={() => setDeleteDialogOpen(true)}
+                variant="ghost"
+                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-5 h-5 mr-3" />
+                <span>Delete Account</span>
+              </Button>
+            </Card>
           </motion.div>
 
           <div className="text-center text-sm text-muted-foreground pt-4">
-            <p>Ritual v1.4</p>
+            <p>Ritual v1.5</p>
             <p>Made with 💕 for shared moments</p>
           </div>
         </div>
         <JoinDrawer open={joinOpen} onOpenChange={setJoinOpen} />
+        <LeaveConfirmDialog 
+          open={leaveDialogOpen} 
+          onOpenChange={setLeaveDialogOpen}
+          onConfirm={handleLeaveCouple}
+          partnerName={partnerProfile?.name}
+        />
+        <DeleteAccountDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          userEmail={user?.email}
+        />
       </div>
     </StrictMobileViewport>
   );

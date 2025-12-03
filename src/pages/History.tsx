@@ -127,12 +127,12 @@ export default function History() {
                         exit={{ height: 0, opacity: 0 }}
                         className="space-y-2 overflow-hidden"
                       >
-                        {cycle.synthesized_output && Array.isArray(cycle.synthesized_output) && (
+                        {cycle.synthesized_output && (cycle.synthesized_output as any)?.rituals && (
                           <>
                             <p className="text-xs font-semibold text-muted-foreground mb-2">
                               All rituals from this week:
                             </p>
-                            {cycle.synthesized_output.map((ritual: any, ritIdx: number) => (
+                            {((cycle.synthesized_output as any)?.rituals || []).map((ritual: any, ritIdx: number) => (
                               <div key={ritIdx} className="flex items-start gap-3 p-2 rounded-lg bg-background/50">
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-sm">{ritual.title}</h3>

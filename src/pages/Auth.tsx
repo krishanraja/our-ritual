@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { StrictMobileViewport } from "@/components/StrictMobileViewport";
 import { useSEO } from '@/hooks/useSEO';
+import { NotificationContainer } from '@/components/InlineNotification';
 import { Check, X } from 'lucide-react';
 
 const Auth = () => {
@@ -18,6 +18,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const navigate = useNavigate();
 
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
@@ -59,17 +60,22 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate password confirmation on signup
     if (!isLogin) {
       if (!passwordStrong) {
-        toast.error("Password must be at least 8 characters");
+        showNotification('error', "Password must be at least 8 characters");
         return;
       }
       if (!passwordsMatch) {
-        toast.error("Passwords don't match");
+        showNotification('error', "Passwords don't match");
         return;
       }
     }
@@ -83,7 +89,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        toast.success("Welcome back!");
+        showNotification('success', "Welcome back!");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -96,10 +102,10 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("Account created! Welcome to Ritual.");
+        showNotification('success', "Account created! Welcome to Ritual.");
       }
     } catch (error: any) {
-      toast.error(error.message);
+      showNotification('error', error.message);
     } finally {
       setLoading(false);
     }
@@ -117,9 +123,19 @@ const Auth = () => {
             <h1 className="text-3xl font-bold text-center mb-2 text-foreground">
               {isLogin ? "Welcome back" : "Create your ritual"}
             </h1>
-            <p className="text-center text-muted-foreground mb-8">
+            <p className="text-center text-muted-foreground mb-6">
               {isLogin ? "Sign in to continue your journey" : "Start your shared ritual journey"}
             </p>
+
+            {/* Inline Notification */}
+            {notification && (
+              <div className="mb-4">
+                <NotificationContainer 
+                  notification={notification} 
+                  onDismiss={() => setNotification(null)} 
+                />
+              </div>
+            )}
 
             <form onSubmit={handleAuth} className="space-y-6">
               {!isLogin && (
