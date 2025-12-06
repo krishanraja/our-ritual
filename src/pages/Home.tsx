@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Heart, Sparkles, Share2, X, Calendar, Clock } from 'lucide-react';
 import { StreakBadge } from '@/components/StreakBadge';
-import { RitualLogo } from '@/components/RitualLogo';
+
 import { WaitingForPartner } from '@/components/WaitingForPartner';
 import { StrictMobileViewport } from '@/components/StrictMobileViewport';
 import { SynthesisAnimation } from '@/components/SynthesisAnimation';
@@ -142,7 +142,7 @@ export default function Home() {
         <div className="h-full flex flex-col items-center justify-center p-4 relative">
           <AnimatedGradientBackground variant="warm" />
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-center space-y-6 max-w-sm relative z-10">
-            <RitualLogo size="md" className="mx-auto" />
+            <img src="/favicon.png" alt="Ritual" className="w-12 h-12 mx-auto" />
             <div>
               <h1 className="text-xl font-bold mb-2">Welcome to Ritual</h1>
               <p className="text-sm text-muted-foreground">Create weekly rituals together</p>

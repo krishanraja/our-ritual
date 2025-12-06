@@ -4,7 +4,7 @@ import { useCouple } from '@/contexts/CoupleContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { RitualLogo } from '@/components/RitualLogo';
+
 import { StrictMobileViewport } from '@/components/StrictMobileViewport';
 import { Calendar } from '@/components/ui/calendar';
 import { Clock, DollarSign, Calendar as CalendarIcon, Star } from 'lucide-react';
@@ -464,7 +464,7 @@ export default function RitualPicker() {
     <StrictMobileViewport>
       <div className="h-full bg-gradient-warm flex flex-col">
         <div className="flex-none px-4 pt-3 pb-2">
-          <RitualLogo size="xs" />
+          <img src="/favicon.png" alt="Ritual" className="w-6 h-6" />
         </div>
 
         <div className="flex-1 min-h-0">

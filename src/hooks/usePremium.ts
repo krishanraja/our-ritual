@@ -20,11 +20,14 @@ export interface PremiumStatus {
 }
 
 const FREE_LIMITS = {
-  swaps: 0,
-  nudgesPerWeek: 1,
-  maxNotesLength: 100,
-  ritualsToShow: 1,
+  swaps: 1,
+  nudgesPerWeek: 2,
+  maxNotesLength: 250,
+  ritualsToShow: 3,
 };
+
+// Developer accounts with permanent premium access
+const DEV_EMAILS = ['hello@crashrodger.com'];
 
 const PREMIUM_LIMITS = {
   swaps: 3,
@@ -34,9 +37,10 @@ const PREMIUM_LIMITS = {
 };
 
 export function usePremium(): PremiumStatus {
-  const { couple, currentCycle } = useCouple();
+  const { couple, currentCycle, user } = useCouple();
   const [isLoading, setIsLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [isDevAccount, setIsDevAccount] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
   const [nudgesUsedThisWeek, setNudgesUsedThisWeek] = useState(0);
@@ -49,6 +53,18 @@ export function usePremium(): PremiumStatus {
     }
 
     try {
+      // Check if dev account first
+      const isDev = user?.email && DEV_EMAILS.includes(user.email);
+      setIsDevAccount(isDev);
+      
+      if (isDev) {
+        setIsPremium(true);
+        setExpiresAt(new Date('2099-12-31'));
+        setSubscriptionId('dev_account');
+        setIsLoading(false);
+        return;
+      }
+
       // Fetch couple's premium status
       const { data: coupleData, error } = await supabase
         .from('couples')
@@ -87,7 +103,7 @@ export function usePremium(): PremiumStatus {
     } finally {
       setIsLoading(false);
     }
-  }, [couple?.id, currentCycle?.id]);
+  }, [couple?.id, currentCycle?.id, user?.email]);
 
   useEffect(() => {
     refresh();
