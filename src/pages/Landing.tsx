@@ -57,19 +57,7 @@ export default function Landing() {
     }
   }, [user, loading]);
 
-  // Auto-redirect to input when couple is complete
-  useEffect(() => {
-    if (!couple || !currentCycle || loading) return;
-    
-    const hasPartnerOne = !!currentCycle?.partner_one_input;
-    const hasPartnerTwo = !!currentCycle?.partner_two_input;
-    const userIsPartnerOne = couple.partner_one === user?.id;
-    const userSubmitted = userIsPartnerOne ? hasPartnerOne : hasPartnerTwo;
-    
-    if (couple.partner_two && !userSubmitted) {
-      navigate('/input');
-    }
-  }, [couple, currentCycle, user, loading, navigate]);
+  // No auto-redirect - let users stay on home and navigate manually
 
   // Check if should show post-ritual checkin
   useEffect(() => {
