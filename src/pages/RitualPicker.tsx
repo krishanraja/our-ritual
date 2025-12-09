@@ -346,7 +346,7 @@ export default function RitualPicker() {
         highlightFeature="rituals"
       />
 
-      <div className="flex-none pt-2">
+      <div className="flex-none pt-2 pb-20">
         <Button
           onClick={handleSubmitRankings}
           disabled={!selectedRanks[1] || !selectedRanks[2] || !selectedRanks[3]}
@@ -390,7 +390,7 @@ export default function RitualPicker() {
         </div>
       </div>
 
-      <div className="flex-none flex gap-2 pt-4">
+      <div className="flex-none flex gap-2 pt-4 pb-20">
         <Button
           onClick={() => setStep('rank')}
           variant="outline"
