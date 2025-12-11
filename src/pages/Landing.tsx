@@ -18,7 +18,7 @@ import { StreakBadge } from '@/components/StreakBadge';
 import { useSurpriseRitual } from '@/hooks/useSurpriseRitual';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format, isPast, parseISO } from 'date-fns';
-import ritualBackgroundGif from '@/assets/ritual-background.gif';
+import ritualBackgroundVideo from '@/assets/ritual-background.mp4';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -31,16 +31,7 @@ export default function Landing() {
   const [nudgeBannerDismissed, setNudgeBannerDismissed] = useState(false);
   const [slowLoading, setSlowLoading] = useState(false);
   const [showPostRitualCheckin, setShowPostRitualCheckin] = useState(false);
-  const [gifLoaded, setGifLoaded] = useState(false);
-
-  // Lazy load the GIF for better performance
-  useEffect(() => {
-    if (isMobile) {
-      const img = new Image();
-      img.src = ritualBackgroundGif;
-      img.onload = () => setGifLoaded(true);
-    }
-  }, [isMobile]);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // Force refresh cycle data when page mounts
   useEffect(() => {
@@ -402,17 +393,18 @@ export default function Landing() {
     <div className="h-full flex flex-col relative">
       <AnimatedGradientBackground variant="warm" />
       
-      {/* Mobile-only GIF background - lazy loaded with fade-in */}
-      {isMobile && gifLoaded && (
-        <div 
-          className="fixed inset-0 z-[1] opacity-20 pointer-events-none animate-fade-in"
-          style={{
-            backgroundImage: `url(${ritualBackgroundGif})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
+      {/* Mobile-only video background - fades in when loaded */}
+      {isMobile && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          onLoadedData={() => setVideoLoaded(true)}
+          className={`fixed inset-0 z-[1] w-full h-full object-cover pointer-events-none transition-opacity duration-500 ${videoLoaded ? 'opacity-20' : 'opacity-0'}`}
+        >
+          <source src={ritualBackgroundVideo} type="video/mp4" />
+        </video>
       )}
       
       {/* Streak Badge Header - Logo handled by AppShell */}
