@@ -19,6 +19,7 @@ interface NavItem {
   label: string;
   isActive: boolean;
   stepLabel?: string;
+  disabled?: boolean;
 }
 
 export const AppShell = ({ children }: AppShellProps) => {
@@ -79,10 +80,13 @@ export const AppShell = ({ children }: AppShellProps) => {
   
   const isThisWeekActive = thisWeekRoutes.includes(location.pathname);
   
+  // Check if ritual space is accessible (couple exists with partner)
+  const hasRitualSpace = couple && couple.partner_two;
+  
   const navItems: NavItem[] = [
     { path: '/', icon: Home, label: 'Home', isActive: location.pathname === '/' },
-    { path: thisWeekRoute, icon: Calendar, label: 'This Week', isActive: isThisWeekActive, stepLabel: getThisWeekStepLabel() },
-    { path: '/history', icon: Clock, label: 'History', isActive: location.pathname === '/history' },
+    { path: thisWeekRoute, icon: Calendar, label: 'This Week', isActive: isThisWeekActive, stepLabel: getThisWeekStepLabel(), disabled: !hasRitualSpace },
+    { path: '/history', icon: Clock, label: 'History', isActive: location.pathname === '/history', disabled: !hasRitualSpace },
     { path: '/profile', icon: User, label: 'Profile', isActive: location.pathname === '/profile' }
   ];
 
@@ -131,21 +135,27 @@ export const AppShell = ({ children }: AppShellProps) => {
         >
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isDisabled = item.disabled;
             
             return (
               <motion.button
                 key={item.label}
-                onClick={() => navigate(item.path)}
-                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  if (isDisabled) return;
+                  navigate(item.path);
+                }}
+                whileTap={isDisabled ? {} : { scale: 0.9 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 className={`relative flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors duration-200 ${
-                  item.isActive 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover:text-foreground'
+                  isDisabled 
+                    ? 'opacity-40 cursor-not-allowed text-muted-foreground' 
+                    : item.isActive 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {/* Active indicator background */}
-                {item.isActive && (
+                {item.isActive && !isDisabled && (
                   <motion.div
                     layoutId="nav-active-bg"
                     className="absolute inset-0 bg-primary/10 rounded-lg"
@@ -154,16 +164,16 @@ export const AppShell = ({ children }: AppShellProps) => {
                   />
                 )}
                 <motion.div
-                  animate={item.isActive ? { scale: 1.1 } : { scale: 1 }}
+                  animate={item.isActive && !isDisabled ? { scale: 1.1 } : { scale: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
                   <Icon className="relative z-10 w-6 h-6" />
                 </motion.div>
-                <span className={`relative z-10 text-xs ${item.isActive ? 'font-semibold' : 'font-medium'}`}>
+                <span className={`relative z-10 text-xs ${item.isActive && !isDisabled ? 'font-semibold' : 'font-medium'}`}>
                   {item.label}
                 </span>
                 {/* Step indicator for This Week */}
-                {item.stepLabel && item.isActive && (
+                {item.stepLabel && item.isActive && !isDisabled && (
                   <motion.span 
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}

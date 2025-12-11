@@ -16,12 +16,15 @@ import { EnhancedPostRitualCheckin } from '@/components/EnhancedPostRitualChecki
 import { SurpriseRitualCard } from '@/components/SurpriseRitualCard';
 import { StreakBadge } from '@/components/StreakBadge';
 import { useSurpriseRitual } from '@/hooks/useSurpriseRitual';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { format, isPast, parseISO } from 'date-fns';
+import ritualBackgroundGif from '@/assets/ritual-background.gif';
 
 export default function Landing() {
   const navigate = useNavigate();
   const { user, couple, partnerProfile, currentCycle, loading, refreshCycle, hasKnownSession } = useCouple();
   const { surprise, refresh: refreshSurprise } = useSurpriseRitual();
+  const isMobile = useIsMobile();
   
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -389,6 +392,19 @@ export default function Landing() {
     <div className="h-full flex flex-col relative">
       <AnimatedGradientBackground variant="warm" />
       
+      {/* Mobile-only GIF background */}
+      {isMobile && (
+        <div 
+          className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage: `url(${ritualBackgroundGif})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+      )}
+      
       {/* Streak Badge Header - Logo handled by AppShell */}
       <div className="flex-none px-4 pt-2 pb-2 relative z-10">
         <div className="flex items-center justify-end">
@@ -421,9 +437,13 @@ export default function Landing() {
 
       {/* Main Content */}
       <div className="flex-1 px-4 flex flex-col justify-center gap-4 relative z-10 overflow-y-auto min-h-0">
-        {/* Full Logo - Homepage branding */}
+        {/* Full Logo - Homepage branding - 50% larger on mobile */}
         <div className="flex justify-center mb-2">
-          <RitualLogo size="lg" variant="full" />
+          <RitualLogo 
+            size="lg" 
+            variant="full" 
+            className={isMobile ? 'scale-150 origin-center' : ''} 
+          />
         </div>
         {/* Surprise Ritual Card */}
         {surprise && !surprise.completed_at && (
