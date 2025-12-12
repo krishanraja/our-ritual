@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-forwarded-for, x-real-ip",
 };
 
 interface ContactRequest {
@@ -18,6 +18,42 @@ interface ResendResponse {
     message: string;
     name?: string;
   };
+}
+
+// Rate limiting: Track submissions per IP (in-memory, resets on cold start)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const MAX_REQUESTS_PER_WINDOW = 3;
+
+function getClientIp(req: Request): string {
+  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+         req.headers.get('x-real-ip') ||
+         'unknown';
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfterSeconds?: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  // Clean up expired entries periodically to prevent memory leaks
+  if (rateLimitMap.size > 1000) {
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (value.resetAt < now) rateLimitMap.delete(key);
+    }
+  }
+  
+  if (!record || record.resetAt < now) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    const retryAfterSeconds = Math.ceil((record.resetAt - now) / 1000);
+    return { allowed: false, retryAfterSeconds };
+  }
+  
+  record.count++;
+  return { allowed: true };
 }
 
 const SUBJECT_LABELS: Record<string, string> = {
@@ -115,6 +151,28 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Rate limiting check
+    const clientIp = getClientIp(req);
+    const rateLimit = checkRateLimit(clientIp);
+    
+    if (!rateLimit.allowed) {
+      log("warn", "Rate limit exceeded", { requestId, ip: clientIp, retryAfterSeconds: rateLimit.retryAfterSeconds });
+      return new Response(
+        JSON.stringify({ 
+          error: "Too many requests. Please try again later.", 
+          retryAfterSeconds: rateLimit.retryAfterSeconds 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": String(rateLimit.retryAfterSeconds)
+          } 
+        }
+      );
+    }
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       log("error", "RESEND_API_KEY is not configured", { requestId });
