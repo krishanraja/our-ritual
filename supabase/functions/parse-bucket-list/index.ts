@@ -39,6 +39,25 @@ serve(async (req) => {
       throw new Error('No image data provided');
     }
 
+    // Validate image format
+    if (typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
+      log('warn', 'Invalid image format', { requestId });
+      return new Response(
+        JSON.stringify({ error: 'Invalid image format. Must be a data URL starting with data:image/' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate image size (max 10MB in base64 ≈ 15MB string)
+    const MAX_IMAGE_SIZE = 15_000_000;
+    if (imageData.length > MAX_IMAGE_SIZE) {
+      log('warn', 'Image too large', { requestId, size: imageData.length });
+      return new Response(
+        JSON.stringify({ error: 'Image too large. Maximum size is 10MB.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     log('info', 'Processing bucket list image', { requestId, imageDataLength: imageData.length });
 
     // Use Gemini's vision capability to extract text
