@@ -25,7 +25,7 @@ import { OnboardingModal } from '@/components/OnboardingModal';
 // Stable transition config - used consistently across all animations
 const TRANSITION = {
   duration: 0.4,
-  ease: [0.25, 0.1, 0.25, 1], // cubic-bezier for smooth native feel
+  ease: "easeOut" as const,
 };
 
 const STAGGER_CHILDREN = {
