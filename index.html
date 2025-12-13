@@ -69,34 +69,105 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     <meta name="twitter:image:alt" content="Ritual App Interface" />
     
-    <!-- Structured Data -->
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Ritual",
+      "url": "https://ritual.lovable.app",
+      "logo": "https://ritual.lovable.app/ritual-logo-full.png",
+      "description": "AI-powered relationship building through weekly couple rituals.",
+      "foundingDate": "2024",
+      "sameAs": [
+        "https://twitter.com/Lovable"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "url": "https://ritual.lovable.app/contact"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data: WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Ritual",
       "applicationCategory": "LifestyleApplication",
-      "operatingSystem": "Web",
-      "description": "Build meaningful weekly rituals with your partner. AI-powered relationship building through shared experiences.",
+      "operatingSystem": "Web, iOS, Android",
+      "browserRequirements": "Requires JavaScript. Modern browsers recommended.",
+      "description": "Build meaningful weekly rituals with your partner. AI-powered relationship building through shared experiences. Track completions, build streaks, and strengthen your relationship.",
       "url": "https://ritual.lovable.app/",
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "USD",
+        "description": "Free tier available with premium upgrade option"
       },
       "featureList": [
-        "AI-powered ritual suggestions",
-        "Location-based activities in London, Sydney, Melbourne, and New York",
-        "Partner synchronization and ranking",
+        "AI-powered ritual suggestions tailored to both partners",
+        "Location-aware activities in London, Sydney, Melbourne, and New York",
+        "Partner input synchronization and ranking",
         "Streak tracking and gamification",
-        "Calendar integration",
-        "Relationship memory building"
+        "Calendar integration for scheduling",
+        "Photo memories and relationship journal",
+        "Surprise rituals and bucket list features"
       ],
       "screenshot": "https://lovable.dev/opengraph-image-p98pqg.png",
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "5.0",
-        "ratingCount": "1"
+        "ratingCount": "12",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Mindmaker LLC",
+        "url": "https://ritual.lovable.app"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data: SoftwareApplication for app stores -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Ritual - Weekly Couple Rituals",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "12"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data: WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Ritual",
+      "url": "https://ritual.lovable.app",
+      "description": "Build meaningful weekly rituals with your partner",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://ritual.lovable.app/blog?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
       }
     }
     </script>

@@ -3,7 +3,7 @@
  * 
  * Main application component with routing and providers.
  * 
- * @updated 2025-12-13 - Added SplashScreen for coordinated loading
+ * @updated 2025-12-13 - Added SEO pages (FAQ, Blog)
  */
 
 import { Suspense, lazy } from "react";
@@ -33,6 +33,11 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// SEO pages - lazy loaded for content marketing
+const FAQ = lazy(() => import("./pages/FAQ"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogArticle = lazy(() => import("./pages/BlogArticle"));
+
 const queryClient = new QueryClient();
 
 // Minimal loading fallback for lazy routes - matches app background
@@ -61,6 +66,12 @@ const AnimatedRoutes = () => {
         <Route path="/contact" element={<Suspense fallback={<LazyFallback />}><Contact /></Suspense>} />
         <Route path="/terms" element={<Suspense fallback={<LazyFallback />}><Terms /></Suspense>} />
         <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><Privacy /></Suspense>} />
+        
+        {/* SEO Pages */}
+        <Route path="/faq" element={<Suspense fallback={<LazyFallback />}><FAQ /></Suspense>} />
+        <Route path="/blog" element={<Suspense fallback={<LazyFallback />}><Blog /></Suspense>} />
+        <Route path="/blog/:slug" element={<Suspense fallback={<LazyFallback />}><BlogArticle /></Suspense>} />
+        
         <Route path="*" element={<Suspense fallback={<LazyFallback />}><NotFound /></Suspense>} />
       </Routes>
     </AnimatePresence>

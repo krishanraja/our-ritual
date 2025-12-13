@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## v1.6.3 (SEO & Content Marketing)
+**Date**: 2025-12-13
+
+### 🔍 SEO Infrastructure
+
+#### FAQ Page (`/faq`)
+- SEO-optimized FAQ page with 20+ questions targeting high-volume keywords
+- FAQ Schema markup for Google rich snippets
+- Categories: Getting Started, Features, Relationship Tips, Technical, Pricing
+- Search and filter functionality
+- Accessible from Profile settings (non-intrusive)
+
+#### Blog System (`/blog`)
+- Full blog with article listings and individual article pages
+- Article Schema markup for Google Search
+- 6 initial articles targeting valuable keywords:
+  - "50 Weekly Rituals for Couples That Actually Work"
+  - "How to Keep Your Relationship Exciting: 15 Science-Backed Strategies"
+  - "75 Best Date Ideas in London for Every Type of Couple"
+  - "How to Build Relationship Traditions That Last a Lifetime"
+  - "60 Best Date Ideas in Sydney for Couples"
+  - "The Science of Couple Rituals: What Research Tells Us"
+- Social sharing (Twitter, LinkedIn, Facebook)
+- Related articles suggestions
+- Category filtering and search
+
+#### Structured Data (index.html)
+- Organization schema for brand identity
+- WebApplication schema for app stores
+- SoftwareApplication schema for discovery
+- WebSite schema with SearchAction for site links
+
+#### Updated Files
+- `sitemap.xml` - All pages including blog articles
+- `robots.txt` - Enhanced with AI crawler rules, social media bots
+- Profile footer - Added FAQ link, updated version
+
+### 🔧 Technical
+- New data files: `faqData.ts`, `blogData.ts`
+- New pages: `FAQ.tsx`, `Blog.tsx`, `BlogArticle.tsx`
+- Routes added to `App.tsx`
+- Markdown-like content renderer for blog articles
+
+---
+
 ## v1.6.2 (Loading Experience Polish)
 **Date**: 2025-12-13
 

@@ -9,9 +9,9 @@
 | Field | Value |
 |-------|-------|
 | **Project Name** | Ritual |
-| **Version** | 1.6.2 |
+| **Version** | 1.6.3 |
 | **Last Updated** | 2025-12-13 |
-| **Status** | Production Ready |
+| **Status** | Production Ready + SEO |
 
 ---
 
@@ -75,6 +75,24 @@
   - Removed scale animations from `StreakBadge` - uses CSS hover only
   - Native HTML splash removed by React on mount, then React splash fades out when data ready
 - **Status**: ✅ Implemented
+
+### AD-010: SEO Content Strategy
+- **Decision**: Implement comprehensive SEO with FAQ page and blog system
+- **Date**: 2025-12-13
+- **Rationale**: Drive organic traffic through content marketing. FAQ targets featured snippets, Blog targets long-tail relationship keywords.
+- **Key Components**:
+  - **FAQ Page** (`/faq`): 20+ questions with FAQ Schema for rich snippets
+  - **Blog System** (`/blog`, `/blog/:slug`): Article pages with Article Schema
+  - **Target Keywords**: "weekly rituals for couples", "date ideas [city]", "relationship traditions", "keep relationship exciting"
+  - **Structured Data**: Organization, WebApplication, SoftwareApplication, WebSite schemas
+  - **robots.txt**: Enhanced for AI crawlers, social bots
+  - **sitemap.xml**: All pages including individual blog articles
+- **Content Strategy**:
+  - City-specific date guides (London, Sydney - more to come)
+  - Evergreen relationship advice
+  - Research-backed content for authority
+  - Internal linking to app conversion points
+- **Status**: ✅ Implemented (6 initial articles, 20+ FAQs)
 
 ---
 
