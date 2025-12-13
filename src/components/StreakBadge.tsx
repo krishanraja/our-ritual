@@ -4,7 +4,7 @@
  * Displays the couple's current streak with visual progression.
  * Badge evolves based on streak length.
  * 
- * @updated 2025-12-11 - Added visual evolution for streaks
+ * @updated 2025-12-13 - Fixed layout shift by showing skeleton while loading
  */
 
 import { useEffect, useState } from 'react';
@@ -44,6 +44,8 @@ export const StreakBadge = ({ showInsightsPrompt = false }: StreakBadgeProps) =>
   useEffect(() => {
     if (couple?.id) {
       fetchStreak();
+    } else {
+      setLoading(false);
     }
   }, [couple?.id]);
 
@@ -65,7 +67,18 @@ export const StreakBadge = ({ showInsightsPrompt = false }: StreakBadgeProps) =>
     }
   };
 
-  if (loading || !couple) return null;
+  // Show skeleton placeholder while loading to prevent layout shift
+  if (loading) {
+    return (
+      <div className="inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full animate-pulse">
+        <div className="w-5 h-5 bg-muted rounded-full" />
+        <div className="w-16 h-4 bg-muted rounded" />
+      </div>
+    );
+  }
+
+  // Don't render anything if no couple (user not paired yet)
+  if (!couple) return null;
 
   const tier = getStreakTier(streak);
   const Icon = tier.icon;
