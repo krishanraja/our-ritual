@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## v1.6.2 (Loading Experience Polish)
+**Date**: 2025-12-13
+
+### ✨ UX Improvements
+
+#### Coordinated Loading Experience
+- **New Component**: `SplashScreen.tsx` - React-controlled splash screen that coordinates with data loading
+- Splash screen now stays visible until CoupleContext has finished loading all data
+- Smooth fade transition from splash to content - no jarring cuts
+- Elements appear all at once in a coordinated reveal
+
+#### Layout Stability (No More Layout Shift)
+- **AppShell.tsx**: Removed entry animations from header and navigation
+  - Header/nav now render instantly without sliding in
+  - Prevents elements from moving as page loads
+- **StreakBadge.tsx**: Removed `initial={{ scale: 0 }}` animation
+  - Badge now uses CSS transitions only on hover
+  - Shows skeleton while loading, then reveals stably
+- **App.tsx**: Removed PageTransition wrapper - animations now only on route changes
+- **index.html**: Updated native splash with consistent gradient background
+
+#### Technical Details
+- Splash screen listens to `loading` state from CoupleContext
+- Native HTML splash removed by React component on mount
+- Content rendered but invisible (`opacity: 0`) until splash fades
+- `AnimatePresence` set to `initial={false}` to prevent first-load animations
+- LazyFallback now uses `h-full` with `bg-gradient-warm` for consistency
+
+### 🔧 Files Changed
+- `src/components/SplashScreen.tsx` (new)
+- `src/App.tsx`
+- `src/main.tsx`
+- `src/components/AppShell.tsx`
+- `src/components/StreakBadge.tsx`
+- `index.html`
+
+---
+
 ## v1.6.1 (Production Readiness Audit)
 **Date**: 2025-12-13
 

@@ -9,7 +9,7 @@
 | Field | Value |
 |-------|-------|
 | **Project Name** | Ritual |
-| **Version** | 1.6.1 |
+| **Version** | 1.6.2 |
 | **Last Updated** | 2025-12-13 |
 | **Status** | Production Ready |
 
@@ -63,6 +63,17 @@
 - **Decision**: Single reaction per user per memory, emoji-based
 - **Date**: 2025-12-11
 - **Rationale**: Creates emotional feedback loop without complexity. Partner completes → other sees → reacts → original user sees reaction.
+- **Status**: ✅ Implemented
+
+### AD-009: Coordinated Loading Experience
+- **Decision**: React-controlled splash screen that waits for data before revealing content
+- **Date**: 2025-12-13
+- **Rationale**: Eliminates layout shift and provides Google-esque loading experience. Elements appear all at once instead of popping in haphazardly.
+- **Key Changes**:
+  - New `SplashScreen.tsx` component wraps app and coordinates with `CoupleContext.loading`
+  - Removed entry animations from `AppShell` header/nav to prevent shift
+  - Removed scale animations from `StreakBadge` - uses CSS hover only
+  - Native HTML splash removed by React on mount, then React splash fades out when data ready
 - **Status**: ✅ Implemented
 
 ---
