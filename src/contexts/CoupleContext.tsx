@@ -5,7 +5,7 @@ import { User } from '@supabase/supabase-js';
 import type { Couple, PartnerProfile, WeeklyCycle } from '@/types/database';
 
 // Version tracking for deployment verification
-const CONTEXT_VERSION = '2024-12-12-v3';
+const CONTEXT_VERSION = '2024-12-13-v4';
 
 // Check localStorage for existing Supabase session token (instant, synchronous)
 const checkCachedSession = (): boolean => {
@@ -23,6 +23,7 @@ interface CoupleContextType {
   session: any;
   couple: Couple | null;
   partnerProfile: PartnerProfile | null;
+  userProfile: { name: string } | null;
   currentCycle: WeeklyCycle | null;
   loading: boolean;
   hasKnownSession: boolean;
@@ -39,10 +40,24 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<any>(null);
   const [couple, setCouple] = useState<Couple | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<PartnerProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<{ name: string } | null>(null);
   const [currentCycle, setCurrentCycle] = useState<WeeklyCycle | null>(null);
   const [loading, setLoading] = useState(true);
   const [coupleLoading, setCoupleLoading] = useState(false);
   const navigate = useNavigate();
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', userId)
+        .single();
+      if (data) setUserProfile(data);
+    } catch (error) {
+      console.error('[PROFILE] Error fetching user profile:', error);
+    }
+  };
 
   const fetchCouple = async (userId: string) => {
     console.log('[COUPLE] fetchCouple called for user:', userId);
@@ -186,13 +201,18 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
       setCoupleLoading(true);
       console.log('[CONTEXT] Starting couple fetch for user:', user.id);
       
-      fetchCouple(user.id).then((coupleData) => {
+      // Fetch user profile and couple data in parallel
+      Promise.all([
+        fetchUserProfile(user.id),
+        fetchCouple(user.id)
+      ]).then(([_, coupleData]) => {
         console.log('[CONTEXT] Couple fetch complete, hasCouple:', !!coupleData);
         if (coupleData) {
-          fetchCycle(coupleData.id);
+          return fetchCycle(coupleData.id);
         }
+      }).finally(() => {
         setCoupleLoading(false);
-      }).catch(() => setCoupleLoading(false));
+      });
 
       // Realtime subscriptions with improved sync and detailed logging
       const channelName = `couples-${user.id}-${Date.now()}`;
@@ -300,6 +320,9 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
         supabase.removeChannel(couplesChannel);
         supabase.removeChannel(cyclesChannel);
       };
+    } else {
+      // Clear userProfile when logged out
+      setUserProfile(null);
     }
   }, [user, couple?.id]);
 
@@ -361,6 +384,7 @@ export const CoupleProvider = ({ children }: { children: ReactNode }) => {
       session,
       couple,
       partnerProfile,
+      userProfile,
       currentCycle,
       loading: !isFullyLoaded,
       hasKnownSession,
